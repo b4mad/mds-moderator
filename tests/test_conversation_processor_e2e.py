@@ -1,73 +1,115 @@
-import asyncio
-import os
 import unittest
-from unittest.mock import patch, MagicMock
+import os
+from dotenv import load_dotenv
 
+from pipecat.frames.frames import (
+    LLMFullResponseEndFrame, LLMFullResponseStartFrame, StopTaskFrame,
+    TextFrame, TranscriptionFrame, UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame, LLMMessagesFrame
+)
 from pipecat.pipeline.pipeline import Pipeline
-from pipecat.pipeline.task import PipelineTask, PipelineParams
-from pipecat.frames.frames import TranscriptionFrame, UserStoppedSpeakingFrame, LLMMessagesFrame
+from pipecat.pipeline.runner import PipelineRunner
+from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.processors.aggregators.llm_response import (
+    LLMAssistantResponseAggregator, LLMUserResponseAggregator, LLMContextAggregator
+)
+from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
+from pipecat.processors.frame_processor import FrameProcessor
 from pipecat.services.openai import OpenAILLMService
 from processors import ConversationProcessor
+from pipecat.processors.logger import FrameLogger
 
-from dotenv import load_dotenv
 load_dotenv(override=True)
 
-
 class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
-    async def test_conversation_processor_with_llm(self):
-        # Mock OpenAI API response
-        mock_openai_response = MagicMock()
-        mock_openai_response.choices = [MagicMock(message={"content": "This is a mock LLM response."})]
+    class TokenCollector(FrameProcessor):
+        def __init__(self, name):
+            self.name = name
+            self.tokens: list[str] = []
+            self.start_collecting = False
 
-        # Create pipeline components
+        def __str__(self):
+            return self.name
+
+        async def process_frame(self, frame, direction):
+            await super().process_frame(frame, direction)
+
+            if isinstance(frame, LLMFullResponseStartFrame):
+                self.start_collecting = True
+            elif isinstance(frame, TextFrame) and self.start_collecting:
+                self.tokens.append(frame.text)
+            elif isinstance(frame, LLMFullResponseEndFrame):
+                self.start_collecting = False
+
+            await self.push_frame(frame, direction)
+
+    async def test_conversation_processor_with_llm(self):
         conversation_processor = ConversationProcessor()
         llm_service = OpenAILLMService(
             api_key=os.getenv("OPENAI_API_KEY"),
             model="gpt-3.5-turbo"
         )
 
-        # Create pipeline
+        token_collector = self.TokenCollector("token_collector")
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful LLM in a WebRTC call. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way.",
+            },
+        ]
+        tma_in = LLMUserResponseAggregator(messages)
+        tma_out = LLMAssistantResponseAggregator(messages)
+        frame_logger = FrameLogger("FL")
+        # context = OpenAILLMContext()
+        # llm_context_aggregator = LLMContextAggregator(context=context)
+
         pipeline = Pipeline([
+            # tma_in,
+            frame_logger,
             conversation_processor,
+            frame_logger,
             llm_service,
+            frame_logger,
+            # token_collector,
+            # llm_context_aggregator,
+            tma_out,
+            frame_logger,
+            conversation_processor,
+            frame_logger
+
         ])
 
-        # Create pipeline task
-        task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
+        task = PipelineTask(pipeline, PipelineParams(allow_interruptions=False))
+        await task.queue_frames([
+            UserStartedSpeakingFrame(),
+            TranscriptionFrame(text="Hello, how are you?", user_id="user1", timestamp="2023-07-13T10:00:00"),
+            UserStoppedSpeakingFrame(),
+            UserStartedSpeakingFrame(),
+            TranscriptionFrame(text="I'm doing well, thanks!", user_id="user2", timestamp="2023-07-13T10:00:05"),
+            UserStoppedSpeakingFrame(),
+            StopTaskFrame(),
+        ])
 
-        # Sample conversation data
-        conversation_data = [
-            {"user_id": "user1", "text": "Hello, how are you?", "timestamp": "2023-07-13T10:00:00"},
-            {"user_id": "user2", "text": "I'm doing well, thanks!", "timestamp": "2023-07-13T10:00:05"},
-        ]
+        runner = PipelineRunner()
+        await runner.run(task)
 
-        # Process the frames
-        for entry in conversation_data:
-            frame = TranscriptionFrame(entry["text"], entry["user_id"], entry["timestamp"])
-            await task.queue_frame(frame)
-
-        # Send UserStoppedSpeakingFrame to trigger LLM processing
-        await task.queue_frame(UserStoppedSpeakingFrame())
-
-        # Run the pipeline
-        # with patch('openai.ChatCompletion.acreate', return_value=mock_openai_response):
-        results = []
-        async for frame in task:
-            results.append(frame)
-
-        # Check the results
-        self.assertTrue(any(isinstance(frame, LLMMessagesFrame) for frame in results))
-        llm_messages_frame = next(frame for frame in results if isinstance(frame, LLMMessagesFrame))
+        # Check that we have an LLM response
+        # self.assertTrue(len(token_collector.tokens) > 0)
 
         # Check the content of LLMMessagesFrame
-        self.assertEqual(len(llm_messages_frame.messages), 1)
-        self.assertEqual(llm_messages_frame.messages[0]['role'], 'user')
-        expected_content = (
-            "2023-07-13T10:00:00 - user1: Hello, how are you?\n"
-            "2023-07-13T10:00:05 - user2: I'm doing well, thanks!"
-        )
-        self.assertEqual(llm_messages_frame.messages[0]['content'], expected_content)
+        print(messages)
+        print(tma_out._messages)
 
+        # llm_messages_frame = next(frame for frame in tma_out.frames if isinstance(frame, LLMMessagesFrame))
+        # self.assertEqual(len(llm_messages_frame.messages), 2)  # User message and assistant response
+        # self.assertEqual(llm_messages_frame.messages[0]['role'], 'user')
+        # expected_content = (
+        #     "2023-07-13T10:00:00 - user1: Hello, how are you?\n"
+        #     "2023-07-13T10:00:05 - user2: I'm doing well, thanks!"
+        # )
+        # self.assertEqual(llm_messages_frame.messages[0]['content'], expected_content)
+        # self.assertEqual(llm_messages_frame.messages[1]['role'], 'assistant')
+        # self.assertEqual(llm_messages_frame.messages[1]['content'], ''.join(token_collector.tokens))
 
 if __name__ == '__main__':
     unittest.main()

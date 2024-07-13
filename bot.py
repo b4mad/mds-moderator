@@ -40,6 +40,7 @@ from processors import ConversationProcessor
 from talking_animation import TalkingAnimation
 
 logger.remove(0)
+# logger.add(sys.stderr, level="TRACE")
 logger.add(sys.stderr, level="DEBUG")
 
 
@@ -55,7 +56,7 @@ async def main(room_url: str, token):
                 camera_out_width=1024,
                 camera_out_height=576,
                 vad_enabled=True,
-                vad_analyzer=SileroVADAnalyzer(),
+                # vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
                 transcription_settings=DailyTranscriptionSettings(
                     language="de",
@@ -68,7 +69,7 @@ async def main(room_url: str, token):
         tts = ElevenLabsTTSService(
             aiohttp_session=session,
             api_key=os.getenv("ELEVENLABS_API_KEY"),
-            voice_id="imCW9DmMnl02HoY7Y4Qn",
+            voice_id="w2qZgZJbxOuKVruWuVU1",
         )
         llm_service = OpenAILLMService(
             api_key=os.getenv("OPENAI_API_KEY"),
@@ -88,11 +89,11 @@ async def main(room_url: str, token):
         # user_response = UserResponseAggregator()
         assistant_response = LLMAssistantResponseAggregator(message_history)
         talking_animation = TalkingAnimation()
-        conversation_processor = ConversationProcessor()
-        frame_logger = FrameLogger("FL: Main")
-        frame_logger_transport = FrameLogger("FL: Transport")
-        frame_logger_conversation = FrameLogger("FL: Conversation")
-        frame_logger_end = FrameLogger("FL: End")
+        conversation_processor = ConversationProcessor(message_history)
+        frame_logger = FrameLogger("FL: Main", "green")
+        frame_logger_transport = FrameLogger("FL: Transport", "yellow")
+        frame_logger_conversation = FrameLogger("FL: Conversation", "yellow")
+        frame_logger_end = FrameLogger("FL: End", "red")
 
 
         pipeline = Pipeline([
@@ -102,11 +103,11 @@ async def main(room_url: str, token):
             frame_logger_conversation,
             llm_service,
             # user_response,
-            # tts,
+            tts,
+            assistant_response,
             # talking_animation,
             frame_logger,
             transport.output(),
-            # assistant_response,
             frame_logger_end,
         ])
 
@@ -134,6 +135,7 @@ async def main(room_url: str, token):
         runner = PipelineRunner()
 
         await runner.run(task)
+        print(message_history)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import sys
 from typing import List
 
 from async_timeout import timeout
@@ -51,15 +52,16 @@ class ConversationProcessor(FrameProcessor):
         conversation (list): A list of dictionaries containing conversation entries.
     """
 
-    def __init__(self):
+
+    def __init__(self, messages: List[dict] = []):
         super().__init__()
-        self._conversation = []
+        self._messages = messages
         self._aggregation = []
-        self._messages = []
         self._role = "user"
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
+        logger.debug(f"ConversationProcessor: {frame}")
 
         if isinstance(frame, UserStoppedSpeakingFrame):
             # Send an app message to the UI
@@ -72,8 +74,10 @@ class ConversationProcessor(FrameProcessor):
                 "text": frame.text,
                 "timestamp": frame.timestamp
             }
-            self._conversation.append(entry)
             self._aggregation.append(entry)
+        elif isinstance(frame, LLMMessagesFrame):
+            # llm response
+            logger.debug(f"LLM response: {frame.messages}")
         else:
             # Pass the frame along unchanged
             await self.push_frame(frame, direction)
@@ -88,6 +92,7 @@ class ConversationProcessor(FrameProcessor):
             self._aggregation = []
 
             frame = LLMMessagesFrame(self._messages)
+            logger.debug(f"Pushing LLMMessagesFrame: {self._messages}")
             await self.push_frame(frame)
 
     def format_aggregation(self):
@@ -103,13 +108,13 @@ class ConversationProcessor(FrameProcessor):
         """
         Returns the entire conversation history.
         """
-        return self._conversation
+        return self._messages
 
     def get_last_n_entries(self, n):
         """
         Returns the last n entries of the conversation.
         """
-        return self._conversation[-n:]
+        return self._messages[-n:]
 
 
 class SentenceAggregator(FrameProcessor):
