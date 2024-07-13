@@ -36,53 +36,11 @@ load_dotenv(override=True)
 
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
 from utils.helpers import load_images, load_sounds
-from processors import StoryProcessor
+from processors import ConversationProcessor
+from talking_animation import TalkingAnimation
 
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
-
-sprites = []
-
-script_dir = os.path.dirname(__file__)
-
-for i in range(1, 26):
-    # Build the full path to the image file
-    full_path = os.path.join(script_dir, f"assets/robot0{i}.png")
-    # Get the filename without the extension to use as the dictionary key
-    # Open the image and convert it to bytes
-    with Image.open(full_path) as img:
-        sprites.append(ImageRawFrame(image=img.tobytes(), size=img.size, format=img.format))
-
-flipped = sprites[::-1]
-sprites.extend(flipped)
-
-# When the bot isn't talking, show a static image of the cat listening
-quiet_frame = sprites[0]
-talking_frame = SpriteFrame(images=sprites)
-
-
-class TalkingAnimation(FrameProcessor):
-    """
-    This class starts a talking animation when it receives an first AudioFrame,
-    and then returns to a "quiet" sprite when it sees a TTSStoppedFrame.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self._is_talking = False
-
-    async def process_frame(self, frame: Frame, direction: FrameDirection):
-        await super().process_frame(frame, direction)
-
-        if isinstance(frame, AudioRawFrame):
-            if not self._is_talking:
-                await self.push_frame(talking_frame)
-                self._is_talking = True
-        elif isinstance(frame, TTSStoppedFrame):
-            await self.push_frame(quiet_frame)
-            self._is_talking = False
-
-        await self.push_frame(frame)
 
 
 async def main(room_url: str, token):
@@ -130,22 +88,30 @@ async def main(room_url: str, token):
         # user_response = UserResponseAggregator()
         assistant_response = LLMAssistantResponseAggregator(message_history)
         talking_animation = TalkingAnimation()
-        frame_logger = FrameLogger("FrameLogger")
-        frame_logger_end = FrameLogger("FrameLoggerEnd")
+        conversation_processor = ConversationProcessor()
+        frame_logger = FrameLogger("FL: Main")
+        frame_logger_transport = FrameLogger("FL: Transport")
+        frame_logger_conversation = FrameLogger("FL: Conversation")
+        frame_logger_end = FrameLogger("FL: End")
+
 
         pipeline = Pipeline([
             transport.input(),
-            user_response,
+            frame_logger_transport,
+            conversation_processor,
+            frame_logger_conversation,
+            llm_service,
+            # user_response,
             # tts,
             # talking_animation,
             frame_logger,
             transport.output(),
-            assistant_response,
+            # assistant_response,
             frame_logger_end,
         ])
 
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
-        await task.queue_frame(quiet_frame)
+        await task.queue_frame(talking_animation.quiet_frame())
 
         # @transport.event_handler("on_first_participant_joined")
         # async def on_first_participant_joined(transport, participant):

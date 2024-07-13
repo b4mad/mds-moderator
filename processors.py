@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import List
 
 from async_timeout import timeout
 
@@ -8,11 +9,15 @@ from pipecat.frames.frames import (
     LLMFullResponseEndFrame,
     TextFrame,
     UserStoppedSpeakingFrame,
-    TranscriptionFrame)
+    TranscriptionFrame,
+    LLMMessagesFrame,
+)
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.transports.services.daily import DailyTransportMessageFrame
+from pipecat.processors.aggregators.llm_response import LLMResponseAggregator
 
 from utils.helpers import load_sounds
+from loguru import logger
 from prompts import IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
 
 # sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
@@ -36,6 +41,76 @@ class StoryPromptFrame(TextFrame):
 
 
 # ------------ Frame Processors ----------- #
+
+class ConversationProcessor(FrameProcessor):
+    """
+    This frame processor keeps track of a conversation by capturing TranscriptionFrames
+    and aggregating the text along with timestamps and user IDs in a conversation array.
+
+    Attributes:
+        conversation (list): A list of dictionaries containing conversation entries.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._conversation = []
+        self._aggregation = []
+        self._messages = []
+        self._role = "user"
+
+    async def process_frame(self, frame: Frame, direction: FrameDirection):
+        await super().process_frame(frame, direction)
+
+        if isinstance(frame, UserStoppedSpeakingFrame):
+            # Send an app message to the UI
+            # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
+            # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
+            await self._push_aggregation()
+        elif isinstance(frame, TranscriptionFrame):
+            entry = {
+                "user_id": frame.user_id,
+                "text": frame.text,
+                "timestamp": frame.timestamp
+            }
+            self._conversation.append(entry)
+            self._aggregation.append(entry)
+        else:
+            # Pass the frame along unchanged
+            await self.push_frame(frame, direction)
+
+    async def _push_aggregation(self):
+        if len(self._aggregation) > 0:
+
+            self._messages.append({"role": self._role, "content": self.format_aggregation()})
+
+            # Reset the aggregation. Reset it before pushing it down, otherwise
+            # if the tasks gets cancelled we won't be able to clear things up.
+            self._aggregation = []
+
+            frame = LLMMessagesFrame(self._messages)
+            await self.push_frame(frame)
+
+    def format_aggregation(self):
+        """
+        Formats the aggregation into a multi-line string.
+        """
+        formatted = []
+        for entry in self._aggregation:
+            formatted.append(f"{entry['timestamp']} - {entry['user_id']}: {entry['text']}")
+        return "\n".join(formatted)
+
+    def get_conversation_history(self):
+        """
+        Returns the entire conversation history.
+        """
+        return self._conversation
+
+    def get_last_n_entries(self, n):
+        """
+        Returns the last n entries of the conversation.
+        """
+        return self._conversation[-n:]
+
 
 class SentenceAggregator(FrameProcessor):
     """This frame processor aggregates text frames into complete sentences.
@@ -104,46 +179,6 @@ class StoryImageProcessor(FrameProcessor):
             pass
         else:
             await self.push_frame(frame)
-
-
-class ConversationProcessor(FrameProcessor):
-    """
-    This frame processor keeps track of a conversation by capturing TranscriptionFrames
-    and aggregating the text along with timestamps and user IDs in a conversation array.
-
-    Attributes:
-        conversation (list): A list of dictionaries containing conversation entries.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.conversation = []
-
-    async def process_frame(self, frame: Frame, direction: FrameDirection):
-        await super().process_frame(frame, direction)
-
-        if isinstance(frame, TranscriptionFrame):
-            entry = {
-                "user_id": frame.user_id,
-                "text": frame.text,
-                "timestamp": frame.timestamp
-            }
-            self.conversation.append(entry)
-
-        # Pass the frame along unchanged
-        await self.push_frame(frame, direction)
-
-    def get_conversation_history(self):
-        """
-        Returns the entire conversation history.
-        """
-        return self.conversation
-
-    def get_last_n_entries(self, n):
-        """
-        Returns the last n entries of the conversation.
-        """
-        return self.conversation[-n:]
 
 
 class StoryProcessor(FrameProcessor):
