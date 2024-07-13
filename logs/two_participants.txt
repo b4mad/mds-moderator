@@ -1,0 +1,42 @@
+❯ /Users/mhild/.local/share/virtualenvs/mds-moderator-SRBVCFQf/bin/python /Users/mhild/src/durandom/mds-moderator/bot.py
+2024-07-12 23:03:44.483 | DEBUG    | pipecat.vad.silero:__init__:47 - Loading Silero VAD model...
+Using cache found in /Users/mhild/.cache/torch/hub/snakers4_silero-vad_v5.0
+2024-07-12 23:03:44.559 | DEBUG    | pipecat.vad.silero:__init__:56 - Loaded Silero VAD
+2024-07-12 23:03:44.560 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking PipelineSource#0 -> DailyInputTransport#0
+2024-07-12 23:03:44.560 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking DailyInputTransport#0 -> LLMUserResponseAggregator#0
+2024-07-12 23:03:44.560 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking LLMUserResponseAggregator#0 -> TalkingAnimation#0
+2024-07-12 23:03:44.560 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking TalkingAnimation#0 -> FrameLogger#0
+2024-07-12 23:03:44.560 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking FrameLogger#0 -> DailyOutputTransport#0
+2024-07-12 23:03:44.561 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking DailyOutputTransport#0 -> LLMAssistantResponseAggregator#0
+2024-07-12 23:03:44.561 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking LLMAssistantResponseAggregator#0 -> PipelineSink#0
+2024-07-12 23:03:44.561 | DEBUG    | pipecat.processors.frame_processor:link:132 - Linking Source#0 -> Pipeline#0
+2024-07-12 23:03:44.561 | DEBUG    | pipecat.pipeline.runner:run:28 - Runner PipelineRunner#0 started running PipelineTask#0
+2024-07-12 23:03:44.561 | INFO     | pipecat.transports.services.daily:join:243 - Joining https://b4mad.daily.co/test
+2024-07-12 23:03:46.635 | INFO     | pipecat.transports.services.daily:join:265 - Joined https://b4mad.daily.co/test
+2024-07-12 23:03:46.635 | INFO     | pipecat.transports.services.daily:join:268 - Enabling transcription with settings language='de' tier='nova' model='2-general' profanity_filter=True redact=False endpointing=True punctuate=True includeRawResponse=True extra={'interim_results': True}
+2024-07-12 23:03:46.635 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: StartFrame#0
+2024-07-12 23:03:46.635 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: MetricsFrame#0
+2024-07-12 23:03:46.636 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: ImageRawFrame#0(size: (1024, 576), format: PNG)
+2024-07-12 23:03:47.288 | DEBUG    | pipecat.transports.services.daily:on_transcription_started:482 - Transcription started: {'model': '2-general', 'startedBy': 'fb92d7eb-f189-4ae8-9639-182f5169dd88', 'tier': 'nova', 'transcriptId': 'dae7cfc9-8dc4-41ef-81c8-870230a1eb92', 'language': 'de'}
+2024-07-12 23:03:52.914 | INFO     | pipecat.transports.services.daily:on_participant_joined:455 - Participant joined 1801b116-6b5f-4efe-a054-14f6255e2e34
+2024-07-12 23:03:52.915 | INFO     | __main__:on_participant_joined:150 - Participant durandom joined
+2024-07-12 23:04:08.245 | DEBUG    | pipecat.transports.services.daily:_on_transcription_message:879 - Transcription (from: 1801b116-6b5f-4efe-a054-14f6255e2e34): [Hallo.]
+2024-07-12 23:04:35.004 | INFO     | pipecat.transports.services.daily:on_participant_joined:455 - Participant joined 92a70c95-1ee0-4446-b042-f1bd444c29a3
+2024-07-12 23:04:35.006 | INFO     | __main__:on_participant_joined:150 - Participant horst joined
+2024-07-12 23:04:41.654 | DEBUG    | pipecat.transports.base_input:_handle_interruptions:115 - User started speaking
+2024-07-12 23:04:41.655 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: StartInterruptionFrame#0
+2024-07-12 23:04:41.656 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: UserStartedSpeakingFrame#0
+2024-07-12 23:04:42.533 | DEBUG    | pipecat.transports.services.daily:_on_transcription_message:879 - Transcription (from: 92a70c95-1ee0-4446-b042-f1bd444c29a3): [Ich bin Horst.]
+2024-07-12 23:04:42.992 | DEBUG    | pipecat.transports.base_input:_handle_interruptions:126 - User stopped speaking
+2024-07-12 23:04:42.993 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: StopInterruptionFrame#0
+2024-07-12 23:04:42.993 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: UserStoppedSpeakingFrame#0
+2024-07-12 23:04:42.993 | DEBUG    | pipecat.processors.logger:process_frame:25 - > LLM Output: LLMMessagesFrame#0
+2024-07-12 23:04:57.697 | DEBUG    | pipecat.transports.services.daily:_on_transcription_message:879 - Transcription (from: 1801b116-6b5f-4efe-a054-14f6255e2e34): [Und ich bin nicht Horst.]
+2024-07-12 23:05:38.084 | INFO     | pipecat.transports.services.daily:on_participant_left:465 - Participant left 92a70c95-1ee0-4446-b042-f1bd444c29a3
+2024-07-12 23:05:38.084 | INFO     | __main__:on_participant_left:155 - Participant horst left
+{"timestamp":"2024-07-12T21:05:38.099776Z","level":"ERROR","fields":{"message":"no subscription for consumer: ConsumerId(\"e2d14ce5-2976-4392-a399-ac2d482d6e6b\")"},"target":"daily_core::call_manager::events::from_sfu::soup_consumer_closed"}
+{"timestamp":"2024-07-12T21:05:38.151743Z","level":"ERROR","fields":{"message":"Failed to close consumer: ConsumerNoLongerExists(ConsumerId(\"e2d14ce5-2976-4392-a399-ac2d482d6e6b\"))"},"target":"daily_core::call_manager::events::subscription::common"}
+{"timestamp":"2024-07-12T21:05:40.151770Z","level":"ERROR","fields":{"message":"no subscription for consumer: ConsumerId(\"ae185112-cc11-458f-bfb0-14e328388ee0\")"},"target":"daily_core::call_manager::events::from_sfu::soup_consumer_closed"}
+2024-07-12 23:05:40.151 | INFO     | pipecat.transports.services.daily:on_participant_left:465 - Participant left 1801b116-6b5f-4efe-a054-14f6255e2e34
+2024-07-12 23:05:40.153 | INFO     | __main__:on_participant_left:155 - Participant durandom left
+{"timestamp":"2024-07-12T21:05:40.202005Z","level":"ERROR","fields":{"message":"Failed to close consumer: ConsumerNoLongerExists(ConsumerId(\"ae185112-cc11-458f-bfb0-14e328388ee0\"))"},"target":"daily_core::call_manager::events::subscription::common"}

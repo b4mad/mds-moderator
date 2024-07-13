@@ -9,15 +9,19 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_response import LLMAssistantResponseAggregator, LLMUserResponseAggregator
+from pipecat.processors.aggregators.user_response import UserResponseAggregator
 from pipecat.frames.frames import (
     AudioRawFrame,
     ImageRawFrame,
     SpriteFrame,
     Frame,
     LLMMessagesFrame,
-    TTSStoppedFrame
+    TTSStoppedFrame,
+    TextFrame,
+    EndFrame,
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
+from pipecat.processors.logger import FrameLogger
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.services.openai import OpenAILLMService
 from pipecat.transports.services.daily import DailyParams, DailyTranscriptionSettings, DailyTransport
@@ -29,6 +33,10 @@ from loguru import logger
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
+
+from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
+from utils.helpers import load_images, load_sounds
+from processors import StoryProcessor
 
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
@@ -91,73 +99,71 @@ async def main(room_url: str, token):
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
-                #
-                # Spanish
-                #
-                # transcription_settings=DailyTranscriptionSettings(
-                #     language="es",
-                #     tier="nova",
-                #     model="2-general"
-                # )
+                transcription_settings=DailyTranscriptionSettings(
+                    language="de",
+                    tier="nova",
+                    model="2-general"
+                )
             )
         )
 
         tts = ElevenLabsTTSService(
             aiohttp_session=session,
             api_key=os.getenv("ELEVENLABS_API_KEY"),
-            #
-            # English
-            #
-            voice_id="pNInz6obpgDQGcFmaJgB",
-
-            #
-            # Spanish
-            #
-            # model="eleven_multilingual_v2",
-            # voice_id="gD1IexrzCvsXPHUuT0s3",
+            voice_id="imCW9DmMnl02HoY7Y4Qn",
         )
-
-        llm = OpenAILLMService(
+        llm_service = OpenAILLMService(
             api_key=os.getenv("OPENAI_API_KEY"),
-            model="gpt-4o")
+            model="gpt-4o"
+        )
 
         messages = [
             {
                 "role": "system",
-                #
-                # English
-                #
-                "content": "You are Chatbot, a friendly, helpful robot. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
-
-                #
-                # Spanish
-                #
-                # "content": "Eres Chatbot, un amigable y útil robot. Tu objetivo es demostrar tus capacidades de una manera breve. Tus respuestas se convertiran a audio así que nunca no debes incluir caracteres especiales. Contesta a lo que el usuario pregunte de una manera creativa, útil y breve. Empieza por presentarte a ti mismo.",
+                "content": "Du hörst einfach nur zu.",
             },
         ]
+        message_history = [LLM_BASE_PROMPT]
 
-        user_response = LLMUserResponseAggregator()
-        assistant_response = LLMAssistantResponseAggregator()
 
-        ta = TalkingAnimation()
+        user_response = LLMUserResponseAggregator(message_history)
+        # user_response = UserResponseAggregator()
+        assistant_response = LLMAssistantResponseAggregator(message_history)
+        talking_animation = TalkingAnimation()
+        frame_logger = FrameLogger("FrameLogger")
+        frame_logger_end = FrameLogger("FrameLoggerEnd")
 
         pipeline = Pipeline([
             transport.input(),
             user_response,
-            llm,
-            tts,
-            ta,
+            # tts,
+            # talking_animation,
+            frame_logger,
             transport.output(),
             assistant_response,
+            frame_logger_end,
         ])
 
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
         await task.queue_frame(quiet_frame)
 
-        @transport.event_handler("on_first_participant_joined")
-        async def on_first_participant_joined(transport, participant):
+        # @transport.event_handler("on_first_participant_joined")
+        # async def on_first_participant_joined(transport, participant):
+        #     transport.capture_participant_transcription(participant["id"])
+        #     participant_name = participant["info"]["userName"] or ''
+        #     logger.info(f"First participant {participant_name} joined")
+        #     # await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
+
+        @transport.event_handler("on_participant_joined")
+        async def on_participant_joined(transport, participant):
             transport.capture_participant_transcription(participant["id"])
-            await task.queue_frames([LLMMessagesFrame(messages)])
+            participant_name = participant["info"]["userName"] or ''
+            logger.info(f"Participant {participant_name} joined")
+
+        @transport.event_handler("on_participant_left")
+        async def on_participant_left(transport, participant, reason):
+            participant_name = participant["info"]["userName"] or ''
+            logger.info(f"Participant {participant_name} left")
 
         runner = PipelineRunner()
 
