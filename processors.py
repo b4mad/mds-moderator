@@ -7,14 +7,15 @@ from pipecat.frames.frames import (
     Frame,
     LLMFullResponseEndFrame,
     TextFrame,
-    UserStoppedSpeakingFrame)
+    UserStoppedSpeakingFrame,
+    TranscriptionFrame)
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.transports.services.daily import DailyTransportMessageFrame
 
 from utils.helpers import load_sounds
 from prompts import IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
 
-sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
+# sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
 
 # -------------- Frame Types ------------- #
 
@@ -32,18 +33,6 @@ class StoryImageFrame(TextFrame):
 class StoryPromptFrame(TextFrame):
     # Frame for prompting the user for input
     pass
-
-class TranscriptionFrame(TextFrame):
-    """A text frame with transcription-specific data. Will be placed in the
-    transport's receive queue when a participant speaks.
-
-    """
-    user_id: str
-    timestamp: str
-
-    def __str__(self):
-        return f"{self.name}(user: {self.user_id}, text: {self.text}, timestamp: {self.timestamp})"
-
 
 
 # ------------ Frame Processors ----------- #
