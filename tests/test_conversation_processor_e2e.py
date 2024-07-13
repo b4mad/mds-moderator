@@ -50,15 +50,15 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
         await task.queue_frame(UserStoppedSpeakingFrame())
 
         # Run the pipeline
-        with patch('openai.ChatCompletion.acreate', return_value=mock_openai_response):
-            results = []
-            async for frame in task:
-                results.append(frame)
+        # with patch('openai.ChatCompletion.acreate', return_value=mock_openai_response):
+        results = []
+        async for frame in task:
+            results.append(frame)
 
         # Check the results
         self.assertTrue(any(isinstance(frame, LLMMessagesFrame) for frame in results))
         llm_messages_frame = next(frame for frame in results if isinstance(frame, LLMMessagesFrame))
-        
+
         # Check the content of LLMMessagesFrame
         self.assertEqual(len(llm_messages_frame.messages), 1)
         self.assertEqual(llm_messages_frame.messages[0]['role'], 'user')
