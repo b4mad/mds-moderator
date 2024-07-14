@@ -10,7 +10,7 @@ The bot uses a pipeline architecture to process audio and video frames, transcri
 
 ### Processors
 
-The project includes two custom processors defined in `processors.py`:
+The project includes two custom processors defined in [processors.py](processors.py):
 
 1. `ConversationLogger`: This processor logs the conversation to a file. It captures both user inputs and bot responses, writing them to a JSON file for later analysis or review. Conversations are stored in the `logs` directory.
 
@@ -18,7 +18,7 @@ The project includes two custom processors defined in `processors.py`:
 
 ### Prompts
 
-The `prompts.py` file contains the base prompt for the language model. Currently, it includes:
+The [prompts.py](prompts.py) file contains the base prompt for the language model. Currently, it includes:
 
 - `LLM_BASE_PROMPT`: A dictionary that defines the system role and content for the AI's behavior.
 
@@ -50,3 +50,8 @@ Make sure you have set up the necessary environment variables and dependencies b
 ```bash
 pipenv install
 ```
+
+## Notes
+
+* TTS: TextFrames have to end with punctuation, otherwise TTS will not kick in
+* Don't add a processor twice to a pipeline
