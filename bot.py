@@ -1,29 +1,16 @@
 import asyncio
 import datetime
-from typing import Optional
 import aiohttp
 import os
 import sys
-
-from PIL import Image
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_response import LLMAssistantResponseAggregator, LLMUserResponseAggregator
-from pipecat.processors.aggregators.user_response import UserResponseAggregator
 from pipecat.frames.frames import (
-    AudioRawFrame,
-    ImageRawFrame,
-    SpriteFrame,
-    Frame,
-    LLMMessagesFrame,
-    TTSStoppedFrame,
     TextFrame,
-    EndFrame,
-    BotSpeakingFrame
 )
-from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.logger import FrameLogger
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.services.openai import OpenAILLMService
@@ -37,8 +24,7 @@ from loguru import logger
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
-from utils.helpers import load_images, load_sounds
+from prompts import LLM_BASE_PROMPT
 from processors import ConversationProcessor, ConversationLogger
 from talking_animation import TalkingAnimation
 
@@ -60,7 +46,7 @@ async def main(room_url: str, token):
                 camera_out_width=1024,
                 camera_out_height=576,
                 vad_enabled=True,
-                # vad_analyzer=SileroVADAnalyzer(version="v5.1"),
+                vad_analyzer=SileroVADAnalyzer(version="v5.1"),
                 transcription_enabled=True,
                 transcription_settings=DailyTranscriptionSettings(
                     language="de",
@@ -81,15 +67,9 @@ async def main(room_url: str, token):
             model="gpt-4o"
         )
 
-        # messages = [
-        #     {
-        #         "role": "system",
-        #         "content": "Du hörst einfach nur zu.",
-        #     },
-        # ]
         messages = [LLM_BASE_PROMPT]
 
-        user_response = LLMUserResponseAggregator(messages)
+        # user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()
         assistant_response = LLMAssistantResponseAggregator(messages)
         talking_animation = TalkingAnimation()
@@ -115,21 +95,6 @@ async def main(room_url: str, token):
             conversation_logger,
         ])
 
-        # This Pipeline is from the original simple-chatbot example
-        # pipeline = Pipeline([
-        #     transport.input(),
-        #     user_response,
-        #     frame_logger_1,
-        #     llm,
-        #     frame_logger_2,
-        #     tts,
-        #     frame_logger_3,
-        #     talking_animation,
-        #     transport.output(),
-        #     assistant_response,
-        #     frame_logger_4,
-        # ])
-
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
         await task.queue_frame(talking_animation.quiet_frame())
 
@@ -147,12 +112,13 @@ async def main(room_url: str, token):
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} joined")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
-            await task.queue_frames([TextFrame(f"Chatbot welcomes {participant_name}!")])
+            await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
 
         @transport.event_handler("on_participant_left")
         async def on_participant_left(transport, participant, reason):
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} left")
+            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}!")])
 
         runner = PipelineRunner()
 
