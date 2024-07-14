@@ -9,7 +9,7 @@ LLM_INTRO_PROMPT = {
 
 LLM_BASE_PROMPT = {
     "role": "system",
-    "content": "Du hörst einfach nur zu.",
+    "content": "Antworte auf jede Eingabe nur mit 'Ja.'",
 }
 
 
