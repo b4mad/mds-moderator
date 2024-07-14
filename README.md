@@ -16,6 +16,14 @@ The project includes two custom processors defined in `processors.py`:
 
 2. `ConversationProcessor`: This processor manages the conversation flow. It aggregates transcribed speech from users, formats it with timestamps and usernames, and prepares it for the language model to generate responses.
 
+### Prompts
+
+The `prompts.py` file contains the base prompt for the language model. Currently, it includes:
+
+- `LLM_BASE_PROMPT`: A dictionary that defines the system role and content for the AI's behavior.
+
+This setup allows for easy modification of the AI's behavior by changing the prompt in this file.
+
 ## Running the Bot
 
 To run the bot and participate in a conversation, you can use the provided Makefile:
