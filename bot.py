@@ -99,7 +99,6 @@ async def main(room_url: str, token):
         frame_logger_3 = FrameLogger("FL3", "yellow")
         frame_logger_4 = FrameLogger("FL4", "red")
 
-
         pipeline = Pipeline([
             transport.input(),
             conversation_processor,
