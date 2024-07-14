@@ -39,7 +39,7 @@ load_dotenv(override=True)
 
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
 from utils.helpers import load_images, load_sounds
-from processors import ConversationProcessor
+from processors import ConversationProcessor, ConversationLogger
 from talking_animation import TalkingAnimation
 
 logger.remove(0)
@@ -60,7 +60,7 @@ async def main(room_url: str, token):
                 camera_out_width=1024,
                 camera_out_height=576,
                 vad_enabled=True,
-                vad_analyzer=SileroVADAnalyzer(version="v5.1"),
+                # vad_analyzer=SileroVADAnalyzer(version="v5.1"),
                 transcription_enabled=True,
                 transcription_settings=DailyTranscriptionSettings(
                     language="de",
@@ -94,6 +94,7 @@ async def main(room_url: str, token):
         assistant_response = LLMAssistantResponseAggregator(messages)
         talking_animation = TalkingAnimation()
         conversation_processor = ConversationProcessor(messages)
+        conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
         frame_logger_1 = FrameLogger("FL1", "green")
         frame_logger_2 = FrameLogger("FL2", "yellow")
         frame_logger_3 = FrameLogger("FL3", "yellow")
@@ -111,6 +112,7 @@ async def main(room_url: str, token):
             transport.output(),
             assistant_response,
             frame_logger_4,
+            conversation_logger,
         ])
 
         # This Pipeline is from the original simple-chatbot example
@@ -155,6 +157,7 @@ async def main(room_url: str, token):
         runner = PipelineRunner()
 
         await runner.run(task)
+        conversation_logger.log_messages()
         print(messages)
 
 

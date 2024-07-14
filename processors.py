@@ -1,17 +1,43 @@
 from datetime import datetime
 from typing import List
-
+import json
 
 from pipecat.frames.frames import (
     Frame,
     UserStoppedSpeakingFrame,
     TranscriptionFrame,
     InterimTranscriptionFrame,
-    UserStartedSpeakingFrame
+    UserStartedSpeakingFrame,
+    LLMResponseEndFrame,
+    LLMFullResponseEndFrame,
 )
 from pipecat.processors.aggregators.llm_response import LLMResponseAggregator
+from pipecat.processors.frame_processor import FrameProcessor, FrameDirection
 
 from loguru import logger
+
+class ConversationLogger(FrameProcessor):
+    def __init__(self, messages: List[dict], log_file_path: str):
+        super().__init__()
+        self.messages = messages
+        self.log_file_path = log_file_path
+        self.last_logged_index = -1
+
+    async def process_frame(self, frame: Frame, direction: FrameDirection):
+        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(frame, UserStoppedSpeakingFrame):
+            self.log_messages()
+        await self.push_frame(frame, direction)
+
+
+    def log_messages(self):
+        new_messages = self.messages[self.last_logged_index + 1:]
+        if new_messages:
+            with open(self.log_file_path, 'a') as log_file:
+                for message in new_messages:
+                    json.dump(message, log_file, indent=4)
+                    log_file.write(',\n')
+            self.last_logged_index = len(self.messages) - 1
+            logger.info(f"Logged {len(new_messages)} new messages to {self.log_file_path}")
 
 class ConversationProcessor(LLMResponseAggregator):
     """
