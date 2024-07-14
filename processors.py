@@ -11,7 +11,9 @@ from pipecat.frames.frames import (
     TextFrame,
     UserStoppedSpeakingFrame,
     TranscriptionFrame,
+    InterimTranscriptionFrame,
     LLMMessagesFrame,
+    UserStartedSpeakingFrame
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.transports.services.daily import DailyTransportMessageFrame
@@ -43,7 +45,7 @@ class StoryPromptFrame(TextFrame):
 
 # ------------ Frame Processors ----------- #
 
-class ConversationProcessor(FrameProcessor):
+class ConversationProcessor(LLMResponseAggregator):
     """
     This frame processor keeps track of a conversation by capturing TranscriptionFrames
     and aggregating the text along with timestamps and user IDs in a conversation array.
@@ -54,53 +56,80 @@ class ConversationProcessor(FrameProcessor):
 
 
     def __init__(self, messages: List[dict] = []):
-        super().__init__()
-        self._messages = messages
-        self._aggregation = []
-        self._role = "user"
+        super().__init__(
+            messages=messages,
+            role="user",
+            start_frame=UserStartedSpeakingFrame,
+            end_frame=UserStoppedSpeakingFrame,
+            accumulator_frame=TranscriptionFrame,
+            interim_accumulator_frame=InterimTranscriptionFrame
+        )
+        self._aggregation_detailed = []
+
+    # def __init__(self, messages: List[dict] = []):
+    #     super().__init__()
+    #     self._messages = messages
+    #     self._aggregation = []
+    #     self._role = "user"
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
-        logger.debug(f"ConversationProcessor: {frame}")
+        if isinstance(frame, self._accumulator_frame):
+            if self._aggregating:
+                entry = {
+                    "user_id": frame.user_id,
+                    "text": frame.text,
+                    "timestamp": frame.timestamp
+                }
+                self._aggregation_detailed.append(entry)
 
-        if isinstance(frame, UserStoppedSpeakingFrame):
-            # Send an app message to the UI
-            # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
-            # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
-            await self._push_aggregation()
-        elif isinstance(frame, TranscriptionFrame):
-            entry = {
-                "user_id": frame.user_id,
-                "text": frame.text,
-                "timestamp": frame.timestamp
-            }
-            self._aggregation.append(entry)
-        elif isinstance(frame, LLMMessagesFrame):
-            # llm response
-            logger.debug(f"LLM response: {frame.messages}")
-        else:
-            # Pass the frame along unchanged
-            await self.push_frame(frame, direction)
+    # async def process_frame(self, frame: Frame, direction: FrameDirection):
+    #     await super().process_frame(frame, direction)
+    #     logger.debug(f"ConversationProcessor: {frame}")
+
+    #     if isinstance(frame, UserStoppedSpeakingFrame):
+    #         # Send an app message to the UI
+    #         # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
+    #         # await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
+    #         await self._push_aggregation()
+    #     elif isinstance(frame, TranscriptionFrame):
+    #         entry = {
+    #             "user_id": frame.user_id,
+    #             "text": frame.text,
+    #             "timestamp": frame.timestamp
+    #         }
+    #         self._aggregation.append(entry)
+    #     elif isinstance(frame, LLMMessagesFrame):
+    #         # llm response
+    #         logger.debug(f"LLM response: {frame.messages}")
+    #     else:
+    #         # Pass the frame along unchanged
+    #         await self.push_frame(frame, direction)
 
     async def _push_aggregation(self):
-        if len(self._aggregation) > 0:
+        self._aggregation = self.format_aggregation()
+        self._aggregation_detailed = []
+        await super()._push_aggregation()
 
-            self._messages.append({"role": self._role, "content": self.format_aggregation()})
+    # async def _push_aggregation(self):
+    #     if len(self._aggregation) > 0:
 
-            # Reset the aggregation. Reset it before pushing it down, otherwise
-            # if the tasks gets cancelled we won't be able to clear things up.
-            self._aggregation = []
+    #         self._messages.append({"role": self._role, "content": self.format_aggregation()})
 
-            frame = LLMMessagesFrame(self._messages)
-            logger.debug(f"Pushing LLMMessagesFrame: {self._messages}")
-            await self.push_frame(frame)
+    #         # Reset the aggregation. Reset it before pushing it down, otherwise
+    #         # if the tasks gets cancelled we won't be able to clear things up.
+    #         self._aggregation = []
+
+    #         frame = LLMMessagesFrame(self._messages)
+    #         logger.debug(f"Pushing LLMMessagesFrame: {self._messages}")
+    #         await self.push_frame(frame)
 
     def format_aggregation(self):
         """
         Formats the aggregation into a multi-line string.
         """
         formatted = []
-        for entry in self._aggregation:
+        for entry in self._aggregation_detailed:
             formatted.append(f"{entry['timestamp']} - {entry['user_id']}: {entry['text']}")
         return "\n".join(formatted)
 

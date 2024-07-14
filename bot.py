@@ -89,30 +89,6 @@ async def main(room_url: str, token):
         # ]
         messages = [LLM_BASE_PROMPT]
 
-
-        # class FrameLogger(FrameProcessor):
-        #     def __init__(self, prefix="Frame", color: Optional[str] = None):
-        #         super().__init__()
-        #         self._prefix = prefix
-        #         self._color = color
-
-        #     async def process_frame(self, frame: Frame, direction: FrameDirection):
-        #         dir = "<" if direction is FrameDirection.UPSTREAM else ">"
-        #         msg = f"{dir} {self._prefix}: {frame}"
-        #         if self._color:
-        #             msg = f"<{self._color}>{msg}</>"
-
-        #         do_logging = True
-        #         if isinstance(frame, AudioRawFrame):
-        #             do_logging = False
-        #         if isinstance(frame, BotSpeakingFrame):
-        #             do_logging = False
-
-        #         if do_logging:
-        #             logger.debug(msg)
-
-        #         await self.push_frame(frame, direction)
-
         user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()
         assistant_response = LLMAssistantResponseAggregator(messages)
@@ -124,34 +100,34 @@ async def main(room_url: str, token):
         frame_logger_4 = FrameLogger("FL4", "red")
 
 
-        # pipeline = Pipeline([
-        #     transport.input(),
-        #     frame_logger_transport,
-        #     conversation_processor,
-        #     frame_logger_conversation,
-        #     llm,
-        #     # user_response,
-        #     tts,
-        #     assistant_response,
-        #     # talking_animation,
-        #     frame_logger,
-        #     transport.output(),
-        #     frame_logger_end,
-        # ])
-
         pipeline = Pipeline([
             transport.input(),
-            user_response,
+            conversation_processor,
             frame_logger_1,
             llm,
             frame_logger_2,
             tts,
             frame_logger_3,
-            talking_animation,
+            # talking_animation,
             transport.output(),
             assistant_response,
             frame_logger_4,
         ])
+
+        # This Pipeline is from the original simple-chatbot example
+        # pipeline = Pipeline([
+        #     transport.input(),
+        #     user_response,
+        #     frame_logger_1,
+        #     llm,
+        #     frame_logger_2,
+        #     tts,
+        #     frame_logger_3,
+        #     talking_animation,
+        #     transport.output(),
+        #     assistant_response,
+        #     frame_logger_4,
+        # ])
 
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
         await task.queue_frame(talking_animation.quiet_frame())
