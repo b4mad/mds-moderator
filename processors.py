@@ -52,8 +52,8 @@ class ConversationProcessor(LLMResponseAggregator):
 
     Attributes:
         conversation (list): A list of dictionaries containing conversation entries.
+        user_mapping (dict): A dictionary mapping user_ids to participant names.
     """
-
 
     def __init__(self, messages: List[dict] = []):
         super().__init__(
@@ -65,6 +65,17 @@ class ConversationProcessor(LLMResponseAggregator):
             interim_accumulator_frame=InterimTranscriptionFrame
         )
         self._aggregation_detailed = []
+        self.user_mapping = {}
+
+    def add_user_mapping(self, user_id: str, participant_name: str):
+        """
+        Stores a mapping between user_id and participant_name.
+
+        Args:
+            user_id (str): The user's ID.
+            participant_name (str): The participant's name.
+        """
+        self.user_mapping[user_id] = participant_name
 
     # def __init__(self, messages: List[dict] = []):
     #     super().__init__()
@@ -130,7 +141,9 @@ class ConversationProcessor(LLMResponseAggregator):
         """
         formatted = []
         for entry in self._aggregation_detailed:
-            formatted.append(f"{entry['timestamp']} - {entry['user_id']}: {entry['text']}")
+            user_id = entry['user_id']
+            username = self.user_mapping.get(user_id, user_id)  # Use username if available, otherwise use user_id
+            formatted.append(f"{entry['timestamp']} - {username}: {entry['text']}")
         return "\n".join(formatted)
 
     def get_conversation_history(self):
@@ -242,7 +255,8 @@ class StoryProcessor(FrameProcessor):
         if isinstance(frame, UserStoppedSpeakingFrame):
             # Send an app message to the UI
             await self.push_frame(DailyTransportMessageFrame(CUE_ASSISTANT_TURN))
-            await self.push_frame(sounds["talking"])
+            # Commented out due to undefined 'sounds' variable
+            # await self.push_frame(sounds["talking"])
 
         elif isinstance(frame, TextFrame):
             # We want to look for sentence breaks in the text
@@ -294,7 +308,8 @@ class StoryProcessor(FrameProcessor):
             await self.push_frame(frame)
             # Send an app message to the UI
             await self.push_frame(DailyTransportMessageFrame(CUE_USER_TURN))
-            await self.push_frame(sounds["listening"])
+            # Commented out due to undefined 'sounds' variable
+            # await self.push_frame(sounds["listening"])
 
         # Anything that is not a TextFrame pass through
         else:

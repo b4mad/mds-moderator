@@ -108,7 +108,7 @@ async def main(room_url: str, token):
             frame_logger_2,
             tts,
             frame_logger_3,
-            # talking_animation,
+            talking_animation,
             transport.output(),
             assistant_response,
             frame_logger_4,
@@ -145,6 +145,7 @@ async def main(room_url: str, token):
             transport.capture_participant_transcription(participant["id"])
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} joined")
+            conversation_processor.add_user_mapping(participant["id"], participant_name)
             await task.queue_frames([TextFrame(f"Chatbot welcomes {participant_name}!")])
 
         @transport.event_handler("on_participant_left")

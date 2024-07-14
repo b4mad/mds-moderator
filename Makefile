@@ -1,4 +1,4 @@
-.PHONY: test bot
+.PHONY: test bot participant
 
 test:
     # TEST_PATTERN="test_aggregators" make test
@@ -7,3 +7,6 @@ test:
 
 bot:
 	pipenv run python ./bot.py
+
+participant:
+	pipenv run python ./participant.py
