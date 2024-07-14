@@ -8,7 +8,6 @@ from pipecat.frames.frames import (
     TranscriptionFrame,
     InterimTranscriptionFrame,
     UserStartedSpeakingFrame,
-    LLMResponseEndFrame,
     LLMFullResponseEndFrame,
 )
 from pipecat.processors.aggregators.llm_response import LLMResponseAggregator
