@@ -15,3 +15,4 @@
   - if a topic gets too deep, or does not provide enough details for non pros
   - bot summarizes the last topic, ask for clarification and maybe some background
   - if a topic relays on old meetings, the bot interrupts by adding the information from the other meeting in a summary, and provides a link
+- prompt is daily/hourly a little changed by adding e.g. one of the top latest news into it, for a more random topic talk.
