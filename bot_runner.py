@@ -1,6 +1,7 @@
 import os
 import argparse
 import subprocess
+import sys
 import requests
 
 from pipecat.transports.services.helpers.daily_rest import DailyRESTHelper, DailyRoomObject, DailyRoomProperties, DailyRoomParams
@@ -169,6 +170,34 @@ async def start_bot(request: Request) -> JSONResponse:
         "token": user_token,
     })
 
+def deploy_bot():
+    # Create a new room
+    params = DailyRoomParams(
+        properties=DailyRoomProperties()
+    )
+    try:
+        room: DailyRoomObject = daily_rest_helper.create_room(params=params)
+    except Exception as e:
+        print(f"Unable to provision room: {e}")
+        return False
+
+    # Get a token for the bot
+    token = daily_rest_helper.get_token(room.url, MAX_SESSION_TIME)
+
+    if not room or not token:
+        print(f"Failed to get token for room: {room.url}")
+        return False
+
+    # Deploy the bot to Fly
+    try:
+        spawn_fly_machine(room.url, token)
+        print(f"Bot deployed successfully to room: {room.url}")
+    except Exception as e:
+        print(f"Failed to spawn VM: {e}")
+        return False
+
+    return True
+
 if __name__ == "__main__":
     # Check environment variables
     for env_var in REQUIRED_ENV_VARS:
@@ -182,8 +211,16 @@ if __name__ == "__main__":
                         default=os.getenv("PORT", 7860), help="Port number")
     parser.add_argument("--reload", action="store_true",
                         default=False, help="Reload code on change")
+    parser.add_argument("--deploy-bot", action="store_true",
+                        default=False, help="Immediately deploy a bot to Fly")
 
     config = parser.parse_args()
+
+    if config.deploy_bot:
+        rv = deploy_bot()
+        if not rv:
+            sys.exit(1)
+        sys.exit(0)
 
     try:
         import uvicorn

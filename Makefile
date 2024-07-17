@@ -13,3 +13,6 @@ bot:
 
 participant:
 	pipenv run python ./participant.py
+
+deploy-bot:
+	pipenv run python ./bot_runner.py --deploy-bot
