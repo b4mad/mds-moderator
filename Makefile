@@ -1,4 +1,7 @@
-.PHONY: test bot participant
+.PHONY: test bot participant fly-secrets
+
+fly-secrets:
+	cat .env | tr '\n' ' ' | xargs flyctl secrets set
 
 test:
     # TEST_PATTERN="test_aggregators" make test

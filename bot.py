@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import datetime
 import aiohttp
@@ -58,8 +59,8 @@ async def main(room_url: str, token):
 
         tts = ElevenLabsTTSService(
             aiohttp_session=session,
-            api_key=os.getenv("ELEVENLABS_API_KEY"),
-            voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
+            api_key=os.getenv("ELEVENLABS_API_KEY", ""),
+            voice_id=os.getenv("ELEVENLABS_VOICE_ID", ""),
             model="eleven_multilingual_v2"
         )
         llm = OpenAILLMService(
@@ -128,5 +129,9 @@ async def main(room_url: str, token):
 
 
 if __name__ == "__main__":
-    (url, token) = configure()
-    asyncio.run(main(url, token))
+    parser = argparse.ArgumentParser(description="Pipecat Bot")
+    parser.add_argument("-u", type=str, help="Room URL")
+    parser.add_argument("-t", type=str, help="Token")
+    config = parser.parse_args()
+
+    asyncio.run(main(config.u, config.t))
