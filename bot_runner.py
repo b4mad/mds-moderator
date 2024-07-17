@@ -74,7 +74,7 @@ def spawn_fly_machine(room_url: str, token: str):
     image = res.json()[0]['config']['image']
 
     # Machine configuration
-    cmd = f"python3 bot.py -u {room_url} -t {token}"
+    cmd = f"/app/.venv/bin/python3 bot.py -u {room_url} -t {token}"
     cmd = cmd.split()
     worker_props = {
         "config": {
@@ -127,19 +127,7 @@ async def start_bot(request: Request) -> JSONResponse:
     except Exception as e:
         pass
 
-    # Use specified room URL, or create a new one if not specified
-    room_url = os.getenv("DAILY_SAMPLE_ROOM_URL", "")
-
-    if not room_url:
-        room = create_room()
-    else:
-        # Check passed room URL exists, we should assume that it already has a sip set up
-        try:
-            room: DailyRoomObject = daily_rest_helper.get_room_from_url(room_url)
-        except Exception:
-            raise HTTPException(
-                status_code=500, detail=f"Room not found: {room_url}")
-
+    room = create_room()
     # Give the agent a token to join the session
     token = daily_rest_helper.get_token(room.url, MAX_SESSION_TIME)
 

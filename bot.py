@@ -4,6 +4,7 @@ import datetime
 import aiohttp
 import os
 import sys
+from typing import Optional
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -37,7 +38,7 @@ logger.add(f"./logs/{current_time_str}_trace.log", level="TRACE")
 logger.add(sys.stderr, level="DEBUG")
 # logger.opt(ansi=True)
 
-async def main(room_url: str, token):
+async def main(room_url: str, token: str):
     async with aiohttp.ClientSession() as session:
         transport = DailyTransport(
             room_url,
@@ -143,9 +144,5 @@ async def main(room_url: str, token):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Pipecat Bot")
-    parser.add_argument("-u", type=str, help="Room URL")
-    parser.add_argument("-t", type=str, help="Token")
-    config = parser.parse_args()
-
-    asyncio.run(main(config.u, config.t))
+    (url, token) = configure()
+    asyncio.run(main(url, token))

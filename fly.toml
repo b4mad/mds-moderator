@@ -1,8 +1,10 @@
+# fly.toml app configuration file generated for mds-moderator on 2024-07-17T12:26:48+02:00
+#
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'mds-moderator'
-primary_region = 'fra'
+primary_region = 'ams'
 
 [build]
 
@@ -18,6 +20,4 @@ primary_region = 'fra'
   processes = ['app']
 
 [[vm]]
-  memory = '512'
-  cpu_kind = 'shared'
-  cpus = 1
+  size = 'shared-cpu-1x'

@@ -20,6 +20,13 @@ def configure():
         required=False,
         help="Daily API Key (needed to create an owner token for the room)",
     )
+    parser.add_argument(
+        "-t",
+        "--token",
+        type=str,
+        required=False,
+        help="Room token (needed to join the room as a participant)",
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -38,21 +45,24 @@ def configure():
     room_name: str = urllib.parse.urlparse(url).path[1:]
     expiration: float = time.time() + 60 * 60
 
-    res: requests.Response = requests.post(
-        f"https://api.daily.co/v1/meeting-tokens",
-        headers={
-            "Authorization": f"Bearer {key}"},
-        json={
-            "properties": {
-                "room_name": room_name,
-                "is_owner": True,
-                "exp": expiration}},
-    )
+    if not args.token:
+        res: requests.Response = requests.post(
+            f"https://api.daily.co/v1/meeting-tokens",
+            headers={
+                "Authorization": f"Bearer {key}"},
+            json={
+                "properties": {
+                    "room_name": room_name,
+                    "is_owner": True,
+                    "exp": expiration}},
+        )
 
-    if res.status_code != 200:
-        raise Exception(
-            f"Failed to create meeting token: {res.status_code} {res.text}")
+        if res.status_code != 200:
+            raise Exception(
+                f"Failed to create meeting token: {res.status_code} {res.text}")
 
-    token: str = res.json()["token"]
+        token: str = res.json()["token"]
+    else:
+        token = args.token
 
     return (url, token)
