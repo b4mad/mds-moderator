@@ -51,6 +51,17 @@ Make sure you have set up the necessary environment variables and dependencies b
 pipenv install
 ```
 
+## Configuration
+
+### Sprite Folder
+
+The bot uses sprite animations for visual feedback. You can configure the sprite folder by setting the `SPRITE_FOLDER` environment variable. By default, it uses the "parkingmeter" folder. To use a different set of sprites, set the environment variable to the name of your desired folder within the `assets` directory.
+
+Example:
+```
+export SPRITE_FOLDER=robot
+```
+
 ## Notes
 
 * TTS: TextFrames have to end with punctuation, otherwise TTS will not kick in
