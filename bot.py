@@ -47,8 +47,8 @@ async def main(room_url: str, token: str):
             DailyParams(
                 audio_out_enabled=True,
                 camera_out_enabled=True,
-                camera_out_width=1024,
-                camera_out_height=576,
+                camera_out_width=1024, #1024
+                camera_out_height=576, #576
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(version="v5.1"),
                 transcription_enabled=True,
