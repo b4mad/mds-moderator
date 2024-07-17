@@ -38,6 +38,19 @@ daily_rest_helper = DailyRESTHelper(
     os.getenv("DAILY_API_URL", 'https://api.daily.co/v1'))
 
 
+def create_room() -> DailyRoomObject:
+    params = DailyRoomParams(
+        properties=DailyRoomProperties()
+    )
+    try:
+        room: DailyRoomObject = daily_rest_helper.create_room(params=params)
+        return room
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to provision room {e}")
+
+
 # ----------------- API ----------------- #
 
 app = FastAPI()
@@ -118,15 +131,7 @@ async def start_bot(request: Request) -> JSONResponse:
     room_url = os.getenv("DAILY_SAMPLE_ROOM_URL", "")
 
     if not room_url:
-        params = DailyRoomParams(
-            properties=DailyRoomProperties()
-        )
-        try:
-            room: DailyRoomObject = daily_rest_helper.create_room(params=params)
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Unable to provision room {e}")
+        room = create_room()
     else:
         # Check passed room URL exists, we should assume that it already has a sip set up
         try:
@@ -172,13 +177,10 @@ async def start_bot(request: Request) -> JSONResponse:
 
 def deploy_bot():
     # Create a new room
-    params = DailyRoomParams(
-        properties=DailyRoomProperties()
-    )
     try:
-        room: DailyRoomObject = daily_rest_helper.create_room(params=params)
-    except Exception as e:
-        print(f"Unable to provision room: {e}")
+        room = create_room()
+    except HTTPException as e:
+        print(f"Unable to provision room: {e.detail}")
         return False
 
     # Get a token for the bot

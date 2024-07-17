@@ -1,5 +1,3 @@
-# fly.toml app configuration file generated for mds-moderator on 2024-07-17T07:48:56+02:00
-#
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
@@ -12,7 +10,7 @@ primary_region = 'fra'
   FLY_APP_NAME = 'mds-moderator'
 
 [http_service]
-  internal_port = 8000
+  internal_port = 7860
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true

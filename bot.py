@@ -29,6 +29,8 @@ from prompts import LLM_BASE_PROMPT
 from processors import ConversationProcessor, ConversationLogger
 from talking_animation import TalkingAnimation
 
+DEBUG = os.getenv("DEBUG", "").lower() in ("true", "1", "yes")
+
 logger.remove(0)
 current_time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 logger.add(f"./logs/{current_time_str}_trace.log", level="TRACE")
@@ -72,29 +74,41 @@ async def main(room_url: str, token):
 
         # user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()
-        assistant_response = LLMAssistantResponseAggregator(messages)
-        talking_animation = TalkingAnimation()
-        conversation_processor = ConversationProcessor(messages)
-        conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
-        frame_logger_1 = FrameLogger("FL1", "green")
-        frame_logger_2 = FrameLogger("FL2", "yellow")
-        frame_logger_3 = FrameLogger("FL3", "yellow")
-        frame_logger_4 = FrameLogger("FL4", "red")
 
-        pipeline = Pipeline([
-            transport.input(),
-            conversation_processor,
-            frame_logger_1,
-            llm,
-            frame_logger_2,
-            tts,
-            frame_logger_3,
-            talking_animation,
-            transport.output(),
-            assistant_response,
-            frame_logger_4,
-            conversation_logger,
-        ])
+        pipeline_components = []
+        pipeline_components.append(transport.input())
+
+        if DEBUG:
+            frame_logger_1 = FrameLogger("FL1", "green")
+            pipeline_components.append(frame_logger_1)
+
+        conversation_processor = ConversationProcessor(messages)
+        pipeline_components.append(conversation_processor)
+        pipeline_components.append(llm)
+
+        if DEBUG:
+            frame_logger_2 = FrameLogger("FL2", "yellow")
+            pipeline_components.append(frame_logger_2)
+
+        pipeline_components.append(tts)
+
+        if DEBUG:
+            frame_logger_3 = FrameLogger("FL3", "yellow")
+            pipeline_components.append(frame_logger_3)
+
+        talking_animation = TalkingAnimation()
+        pipeline_components.append(talking_animation)
+        pipeline_components.append(transport.output())
+        assistant_response = LLMAssistantResponseAggregator(messages)
+        pipeline_components.append(assistant_response)
+
+        if DEBUG:
+            frame_logger_4 = FrameLogger("FL4", "red")
+            pipeline_components.append(frame_logger_4)
+            conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
+            pipeline_components.append(conversation_logger)
+
+        pipeline = Pipeline(pipeline_components)
 
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
         await task.queue_frame(talking_animation.quiet_frame())

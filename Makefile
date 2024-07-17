@@ -1,7 +1,4 @@
-.PHONY: test bot participant fly-secrets
-
-fly-secrets:
-	cat .env | tr '\n' ' ' | xargs flyctl secrets set
+.PHONY: test bot participant fly-secrets fly-launch fly-build fly-deploy-bot
 
 test:
     # TEST_PATTERN="test_aggregators" make test
@@ -14,5 +11,15 @@ bot:
 participant:
 	pipenv run python ./participant.py
 
-deploy-bot:
+fly-secrets:
+	cat .env | tr '\n' ' ' | xargs flyctl secrets set
+
+fly-launch:
+	flyctl launch
+
+fly-build:
+	flyctl deploy --build-only
+
+fly-deploy-bot:
 	pipenv run python ./bot_runner.py --deploy-bot
+
