@@ -1,12 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8426078563209afd5eb68cee79aa3a03b1109ac021a076d702b00cc5ba6d508f"
+            "sha256": "5558dcd7a14f23acb212cdbff659c1940f55d94c8efcbf62b12c49788f05b702"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_full_version": "3.10.14",
-            "python_version": "3.10"
+            "python_version": "3.12"
         },
         "sources": [
             {
@@ -297,11 +296,11 @@
                 "all"
             ],
             "hashes": [
-                "sha256:97ecbf994be0bcbdadedf88c3150252bed7b2087075ac99735403b1b76cc8fc0",
-                "sha256:b9db9dd147c91cb8b769f7183535773d8741dd46f9dc6676cd82eab510228cd7"
+                "sha256:4f51cfa25d72f9fbc3280832e84b32494cf186f50158d364a8765aabf22587bf",
+                "sha256:ddd1ac34cb1f76c2e2d7f8545a4bcb5463bce4834e81abf0b189e0c359ab2413"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.111.0"
+            "version": "==0.111.1"
         },
         "fastapi-cli": {
             "hashes": [
@@ -1227,6 +1226,8 @@
                 "sha256:f2357eb0965583a0954d6f9ad005bba0091f956aef879822274b1bcdb11bd308",
                 "sha256:ff60bf7ce3de1d43ad3f6969983f321a31f0a45df3690921720bcad6a8596cc4"
             ],
+            "index": "pypi",
+            "markers": "python_full_version >= '3.8.0'",
             "version": "==2.3.1"
         },
         "torchaudio": {
@@ -1252,6 +1253,7 @@
                 "sha256:ce45e05acd544696c6a6f023d4fe8614ade57515799a1103b2418e854838d4a5",
                 "sha256:d4982f4c520e49628507e968fb29c5db707108a8580b11593f049a932c8f2b98"
             ],
+            "index": "pypi",
             "version": "==2.3.1"
         },
         "tqdm": {
@@ -1275,7 +1277,7 @@
                 "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d",
                 "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"
             ],
-            "markers": "python_version < '3.11'",
+            "markers": "python_version >= '3.8'",
             "version": "==4.12.2"
         },
         "ujson": {

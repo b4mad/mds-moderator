@@ -1,0 +1,23 @@
+# fly.toml app configuration file generated for mds-moderator on 2024-07-17T12:26:48+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'mds-moderator'
+primary_region = 'ams'
+
+[build]
+
+[env]
+  FLY_APP_NAME = 'mds-moderator'
+
+[http_service]
+  internal_port = 7860
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  size = 'shared-cpu-1x'
