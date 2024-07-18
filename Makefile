@@ -1,3 +1,9 @@
+# Load environment variables from .env file
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 .PHONY: test bot participant deploy-bot fly-secrets fly-launch fly-build fly-deploy-bot
 
 test:
@@ -28,4 +34,10 @@ fly-build:
 
 fly-deploy-bot:
 	pipenv run python ./bot_runner.py --deploy-bot
+
+bot-with-prompt:
+	curl --verbose --location --request POST "$${DEPLOYMENT_URL}/start_bot" \
+		--header 'Content-Type: application/json' \
+		--trace-ascii /dev/stdout \
+		--data @system_prompt.json
 

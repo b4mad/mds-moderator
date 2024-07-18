@@ -75,7 +75,36 @@ Example:
 export SPRITE_FOLDER=robot
 ```
 
+## Starting a Bot
+
+You can start a bot using a simple curl command:
+
+```bash
+curl --location --request POST 'https://$DEPLOYMENT_URL/start_bot'
+```
+
+### POST Parameters
+
+The `/start_bot` endpoint accepts the following optional parameters:
+
+1. `test`: Used for webhook creation requests. If present, the server will return a JSON response with `{"test": true}`.
+2. `system_prompt`: Allows you to override the default system prompt for the bot. This sets the bot's behavior for the session.
+
+Example with a custom system prompt:
+
+```bash
+curl --location --request POST 'https://$DEPLOYMENT_URL/start_bot' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "system_prompt": "You are a helpful assistant. Always respond politely and concisely."
+}'
+```
+
+The response will include a `room_url` and a `token` that can be used to join the video call with the bot.
+
+
 ## Notes
 
 * TTS: TextFrames have to end with punctuation, otherwise TTS will not kick in
 * Don't add a processor twice to a pipeline
+

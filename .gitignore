@@ -155,3 +155,4 @@ cython_debug/
 runpod.toml
 .aider*
 aider_hints/
+system_prompt.json
