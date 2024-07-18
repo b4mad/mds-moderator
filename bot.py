@@ -41,7 +41,7 @@ logger.add(sys.stderr, level="DEBUG")
 
 async def main(room_url: str, token: str):
     talking_animation = TalkingAnimation()
-    
+
     async with aiohttp.ClientSession() as session:
         transport = DailyTransport(
             room_url,
