@@ -18,11 +18,24 @@ The project includes two custom processors defined in [processors.py](processors
 
 ### Prompts
 
-The [prompts.py](prompts.py) file contains the base prompt for the language model. Currently, it includes:
+The [prompts.py](prompts.py) file contains the base prompt for the language model. It includes:
 
 - `LLM_BASE_PROMPT`: A dictionary that defines the system role and content for the AI's behavior.
 
-This setup allows for easy modification of the AI's behavior by changing the prompt in this file.
+This setup allows for easy modification of the AI's behavior. You can change the behavior in two ways:
+
+1. By modifying the `default_content` in the `prompts.py` file.
+2. By setting the `SYSTEM_PROMPT` environment variable.
+
+#### Using the SYSTEM_PROMPT Environment Variable
+
+You can override the default system prompt by setting the `SYSTEM_PROMPT` environment variable before running the bot. This allows you to change the bot's behavior without modifying the code. For example:
+
+```bash
+export SYSTEM_PROMPT="You are a helpful assistant. Always respond politely and concisely."
+```
+
+If the `SYSTEM_PROMPT` environment variable is not set, the bot will use the default content defined in `prompts.py`.
 
 ## Running the Bot
 
