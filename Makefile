@@ -39,5 +39,5 @@ bot-with-prompt:
 	curl --verbose --location --request POST "$${DEPLOYMENT_URL}/start_bot" \
 		--header 'Content-Type: application/json' \
 		--trace-ascii /dev/stdout \
-		--data @system_prompt.json
+		--data @start_bot.json
 

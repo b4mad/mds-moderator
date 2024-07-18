@@ -67,7 +67,7 @@ app.add_middleware(
 # ----------------- Main ----------------- #
 
 
-def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = None):
+def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None):
     # Use the same image as the bot runner
     res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS)
     if res.status_code != 200:
@@ -99,6 +99,9 @@ def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = 
     if system_prompt:
         worker_props["config"]["env"]["SYSTEM_PROMPT"] = system_prompt
 
+    if sprite_folder:
+        worker_props["config"]["env"]["SPRITE_FOLDER"] = sprite_folder
+
     # Spawn a new machine instance
     res = requests.post(
         f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines",
@@ -129,8 +132,10 @@ async def start_bot(request: Request) -> JSONResponse:
         if "test" in data:
             return JSONResponse({"test": True})
         system_prompt = data.get("system_prompt")
+        sprite_folder = data.get("sprite_folder")
     except Exception as e:
         system_prompt = None
+        sprite_folder = None
 
     room = create_room()
     # Give the agent a token to join the session
@@ -159,7 +164,7 @@ async def start_bot(request: Request) -> JSONResponse:
                 status_code=500, detail=f"Failed to start subprocess: {e}")
     else:
         try:
-            spawn_fly_machine(room.url, token, system_prompt)
+            spawn_fly_machine(room.url, token, system_prompt, sprite_folder)
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to spawn VM: {e}")
