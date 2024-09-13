@@ -4,7 +4,7 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-.PHONY: test bot participant deploy-bot fly-secrets fly-launch fly-build fly-deploy-bot
+.PHONY: test bot participant deploy-bot fly-secrets fly-launch fly-build fly-deploy-bot docker-build-linux docker-run-bash docker-run-bot bot-with-prompt
 
 test:
     # TEST_PATTERN="test_aggregators" make test
@@ -14,6 +14,9 @@ test:
 bot:
 	pipenv run python ./bot.py
 
+bot-runner:
+	RUN_AS_PROCESS=true pipenv run python ./bot_runner.py
+
 participant:
 	pipenv run python ./participant.py
 
@@ -22,6 +25,10 @@ docker-build-linux:
 
 docker-run-bash:
 	docker run -it --rm durandom/mds-moderator bash
+
+docker-run-bot:
+	docker run -p 7860:7860 --env-file .env durandom/mds-moderator
+
 
 # creates the new fly app
 fly-launch:
@@ -43,3 +50,8 @@ bot-with-prompt:
 		--trace-ascii /dev/stdout \
 		--data @start_bot.json
 
+bot-with-prompt-local:
+	curl --verbose --location --request POST "http://localhost:7860/start_bot" \
+		--header 'Content-Type: application/json' \
+		--trace-ascii /dev/stdout \
+		--data @start_bot.json
