@@ -23,6 +23,7 @@ docker-build-linux:
 docker-run-bash:
 	docker run -it --rm durandom/mds-moderator bash
 
+# creates the new fly app
 fly-launch:
 	flyctl launch
 
@@ -35,6 +36,7 @@ fly-build:
 fly-deploy-bot:
 	pipenv run python ./bot_runner.py --deploy-bot
 
+# starts a bot with a prompt on fly.io
 bot-with-prompt:
 	curl --verbose --location --request POST "$${DEPLOYMENT_URL}/start_bot" \
 		--header 'Content-Type: application/json' \

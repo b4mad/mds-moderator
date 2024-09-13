@@ -53,7 +53,7 @@ async def main(room_url: str, token: str):
                 camera_out_width=talking_animation.sprite_width,
                 camera_out_height=talking_animation.sprite_height,
                 vad_enabled=True,
-                vad_analyzer=SileroVADAnalyzer(version="v5.1"),
+                vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
                 transcription_settings=DailyTranscriptionSettings(
                     language="de",
