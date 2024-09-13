@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List
 import json
+import boto3
+from botocore.exceptions import ClientError
 
 from pipecat.frames.frames import (
     Frame,
@@ -37,6 +39,37 @@ class ConversationLogger(FrameProcessor):
                     log_file.write(',\n')
             self.last_logged_index = len(self.messages) - 1
             logger.info(f"Logged {len(new_messages)} new messages to {self.log_file_path}")
+
+class BucketLogger(FrameProcessor):
+    def __init__(self, messages: List[dict], bucket_name: str, subpath: str):
+        super().__init__()
+        self.messages = messages
+        self.bucket_name = bucket_name
+        self.subpath = subpath
+        self.last_logged_index = -1
+        self.s3_client = boto3.client('s3')
+
+    async def process_frame(self, frame: Frame, direction: FrameDirection):
+        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(frame, UserStoppedSpeakingFrame):
+            self.log_messages()
+        await self.push_frame(frame, direction)
+
+    def log_messages(self):
+        new_messages = self.messages[self.last_logged_index + 1:]
+        if new_messages:
+            for i, message in enumerate(new_messages, start=self.last_logged_index + 1):
+                filename = f"{i:06d}.json"
+                key = f"{self.subpath}/{filename}"
+                try:
+                    self.s3_client.put_object(
+                        Bucket=self.bucket_name,
+                        Key=key,
+                        Body=json.dumps(message, indent=4)
+                    )
+                    logger.info(f"Uploaded message {i} to s3://{self.bucket_name}/{key}")
+                except ClientError as e:
+                    logger.error(f"Failed to upload message {i} to S3: {e}")
+            self.last_logged_index = len(self.messages) - 1
 
 class ConversationProcessor(LLMResponseAggregator):
     """

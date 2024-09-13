@@ -102,9 +102,23 @@ curl --location --request POST 'https://$DEPLOYMENT_URL/start_bot' \
 
 The response will include a `room_url` and a `token` that can be used to join the video call with the bot.
 
+## S3 Bucket Upload
+
+When the `DEBUG` environment variable is not set, the bot will upload conversation logs to an S3 bucket. This feature uses the `BucketLogger` processor, which is responsible for uploading the conversation messages as JSON files to the specified S3 bucket.
+
+To enable S3 bucket upload:
+
+1. Ensure that the `DEBUG` environment variable is not set.
+2. Configure the following environment variables in your `.env` file:
+   - `AWS_ACCESS_KEY_ID`: Your AWS access key ID
+   - `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
+   - `AWS_REGION`: The AWS region for your S3 bucket (e.g., "us-west-2")
+   - `S3_BUCKET_NAME`: The name of your S3 bucket
+
+The `BucketLogger` will upload each message as a separate JSON file to the specified S3 bucket. The files will be named with a 6-digit zero-padded index (e.g., "000001.json", "000002.json", etc.) and will be stored in a subdirectory based on the conversation session.
+
+This feature allows for easy storage and retrieval of conversation logs, which can be useful for analysis, debugging, or compliance purposes.
 
 ## Notes
 
-* TTS: TextFrames have to end with punctuation, otherwise TTS will not kick in
-* Don't add a processor twice to a pipeline
-
+See the [NOTES.md](NOTES.md) file for additional information and notes on the project.

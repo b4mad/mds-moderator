@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from prompts import LLM_BASE_PROMPT
-from processors import ConversationProcessor, ConversationLogger
+from processors import ConversationProcessor, ConversationLogger, BucketLogger
 from talking_animation import TalkingAnimation
 
 DEBUG = os.getenv("DEBUG", "").lower() in ("true", "1", "yes")
@@ -105,10 +105,13 @@ async def main(room_url: str, token: str):
         assistant_response = LLMAssistantResponseAggregator(messages)
         pipeline_components.append(assistant_response)
 
-        conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
         if DEBUG:
+            conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
             frame_logger_4 = FrameLogger("FL4", "red")
             pipeline_components.append(frame_logger_4)
+            pipeline_components.append(conversation_logger)
+        else:
+            conversation_logger = BucketLogger(messages, os.getenv("S3_BUCKET_NAME", "mds-moderator"), f"conversation-{current_time_str}")
             pipeline_components.append(conversation_logger)
 
         pipeline = Pipeline(pipeline_components)
