@@ -153,7 +153,9 @@ async def main(room_url: str, token: str):
 
         await runner.run(task)
         conversation_logger.log_messages()
-        print(messages)
+        logger.info("The conversation has ended. This is the final transcript:")
+        logger.info(messages)
+        logger.info("Bye!")
 
 
 if __name__ == "__main__":

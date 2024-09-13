@@ -15,10 +15,13 @@ bot:
 	pipenv run python ./bot.py
 
 bot-runner:
-	RUN_AS_PROCESS=true pipenv run python ./bot_runner.py
+	pipenv run env RUN_AS_PROCESS=true  python ./bot_runner.py
 
 participant:
 	pipenv run python ./participant.py
+
+docker-build:
+	docker build --tag=durandom/mds-moderator .
 
 docker-build-linux:
 	docker build --tag=durandom/mds-moderator --platform linux/amd64  .
@@ -39,6 +42,9 @@ fly-secrets:
 
 fly-build:
 	flyctl deploy --build-only
+
+fly-deploy:
+	flyctl deploy
 
 fly-deploy-bot:
 	pipenv run python ./bot_runner.py --deploy-bot

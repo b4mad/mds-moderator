@@ -21,7 +21,7 @@ load_dotenv(override=True)
 
 # ------------ Configuration ------------ #
 
-MAX_SESSION_TIME = 60 * 60  # 60 minutes
+MAX_SESSION_TIME = 5 * 60  # 60 minutes
 REQUIRED_ENV_VARS = [
     'DAILY_API_KEY',
     'OPENAI_API_KEY',
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
 
 async def create_room() -> DailyRoomObject:
     # Use specified room URL, or create a new one if not specified
-    room_url = os.getenv("DAILY_SAMPLE_ROOM_URL", "")
+    room_url = os.getenv("off_DAILY_SAMPLE_ROOM_URL", "")
 
     if not room_url:
         params = DailyRoomParams(
@@ -177,14 +177,23 @@ async def start_bot(request: Request) -> JSONResponse:
 
     # Launch a new fly.io machine, or run as a shell process (not recommended)
     run_as_process = os.getenv("RUN_AS_PROCESS", False)
+    if run_as_process:
+        print(f"Running as process")
+    else:
+        print(f"Running as VM")
 
     if run_as_process:
         try:
             env = os.environ.copy()
             if system_prompt:
                 env["SYSTEM_PROMPT"] = system_prompt
+            # check if we run inside a docker container
+            if os.path.exists("/app/.venv/bin/python3"):
+                cmd = f"/app/.venv/bin/python3 -m bot -u {room.url} -t {token}"
+            else:
+                cmd = f"pipenv run python3 -m bot -u {room.url} -t {token}"
             subprocess.Popen(
-                [f"python3 -m bot -u {room.url} -t {token}"],
+                [cmd],
                 shell=True,
                 bufsize=1,
                 cwd=os.path.dirname(os.path.abspath(__file__)),

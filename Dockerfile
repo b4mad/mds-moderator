@@ -62,12 +62,16 @@ ENV HOME=/home/user \
     PYTHONPATH=$HOME/app \
     PYTHONUNBUFFERED=1
 
+RUN mkdir /app/logs && chown user:user /app/logs
+
 # Switch to the "user" user
 USER user
 
 # Copy frontend app and build
 COPY --chown=user ./frontend/ frontend/
 RUN cd frontend && npm install && npm run build
+
+# create an /app/logs directory
 
 # And start the FastAPI server
 CMD /app/.venv/bin/python3 bot_runner.py --port ${FAST_API_PORT}
