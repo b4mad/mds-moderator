@@ -17,7 +17,7 @@ load_dotenv(override=True)
 
 # ------------ Configuration ------------ #
 
-MAX_SESSION_TIME = 5 * 60  # 5 minutes
+MAX_SESSION_TIME = 60 * 60  # 60 minutes
 REQUIRED_ENV_VARS = [
     'DAILY_API_KEY',
     'OPENAI_API_KEY',
