@@ -31,7 +31,7 @@ export default function App() {
 
   if (state === "error") {
     return (
-      <div className="flex items-center mx-auto">
+      <div className="flex items-center justify-center h-screen">
         <p className="text-red-500 font-semibold bg-white px-4 py-2 shadow-xl rounded-lg">
           An error occurred. Please try again later.
         </p>
@@ -40,7 +40,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center justify-center h-screen space-y-4">
       {state === "idle" && (
         <button
           onClick={launchBot}
