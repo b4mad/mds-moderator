@@ -7,6 +7,7 @@ type State = "idle" | "launching" | "room_created" | "error";
 export default function App() {
   const [state, setState] = useState<State>("idle");
   const [room, setRoom] = useState<string | null>(null);
+  const [systemPrompt, setSystemPrompt] = useState<string>("Du bist Chuck Norris");
 
   async function launchBot() {
     setState("launching");
@@ -17,6 +18,7 @@ export default function App() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ system_prompt: systemPrompt }),
       });
 
       const { room_url } = await response.json();
@@ -40,14 +42,24 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen space-y-4">
+    <div className="flex flex-col items-center justify-center h-screen w-full">
       {state === "idle" && (
-        <button
-          onClick={launchBot}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Launch Bot
-        </button>
+        <div className="w-full max-w-4xl px-4 space-y-4">
+          <textarea
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
+            className="w-full h-32 p-2 border border-gray-300 rounded"
+            placeholder="Enter system prompt..."
+          />
+          <div className="flex justify-center">
+            <button
+              onClick={launchBot}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Launch Bot
+            </button>
+          </div>
+        </div>
       )}
       {state === "launching" && <p>Launching bot...</p>}
       {state === "room_created" && (

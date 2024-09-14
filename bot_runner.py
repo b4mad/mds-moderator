@@ -10,6 +10,7 @@ from typing import Optional
 from pathlib import Path
 import aiohttp
 from contextlib import asynccontextmanager
+from loguru import logger
 
 from pipecat.transports.services.helpers.daily_rest import DailyRESTHelper, DailyRoomObject, DailyRoomProperties, DailyRoomParams
 
@@ -169,13 +170,14 @@ async def start_bot(request: Request) -> JSONResponse:
 
     try:
         data = await request.json()
+        logger.info(f"Starting bot with request: {data}")
         # Is this a webhook creation request?
         if "test" in data:
             return JSONResponse({"test": True})
-        system_prompt = data.get("system_prompt")
+        system_prompt = data.get("system_prompt") or os.getenv("SYSTEM_PROMPT")
         sprite_folder = data.get("sprite_folder")
     except Exception as e:
-        system_prompt = None
+        system_prompt = os.getenv("SYSTEM_PROMPT")
         sprite_folder = None
 
     room = await create_room()
@@ -200,10 +202,10 @@ async def start_bot(request: Request) -> JSONResponse:
             if system_prompt:
                 env["SYSTEM_PROMPT"] = system_prompt
             # check if we run inside a docker container
-            if os.path.exists("/app/.venv/bin/python3"):
-                cmd = f"/app/.venv/bin/python3 -m bot -u {room.url} -t {token}"
+            if os.path.exists("/app/.venv/bin/python"):
+                cmd = f"/app/.venv/bin/python bot.py -u {room.url} -t {token}"
             else:
-                cmd = f"pipenv run python3 -m bot -u {room.url} -t {token}"
+                cmd = f"pipenv run python bot.py -u {room.url} -t {token}"
             subprocess.Popen(
                 [cmd],
                 shell=True,
