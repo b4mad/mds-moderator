@@ -3,6 +3,9 @@ import argparse
 import subprocess
 import sys
 import requests
+import uuid
+import asyncio
+import uvicorn
 from typing import Optional
 from pathlib import Path
 import aiohttp
@@ -155,6 +158,15 @@ def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = 
 
 @app.post("/start_bot")
 async def start_bot(request: Request) -> JSONResponse:
+    if os.getenv("DUMMY_BOT", False):
+        # Simulate bot spawning without actually creating a room or spawning a bot
+        dummy_room_url = f"https://example.daily.co/{uuid.uuid4()}"
+        dummy_token = f"dummy_token_{uuid.uuid4()}"
+        return JSONResponse({
+            "room_url": dummy_room_url,
+            "token": dummy_token,
+        })
+
     try:
         data = await request.json()
         # Is this a webhook creation request?
@@ -232,16 +244,16 @@ async def catch_all(path_name: Optional[str] = ""):
 
     raise HTTPException(status_code=404, detail="File not found")
 
-def deploy_bot():
+async def deploy_bot():
     # Create a new room
     try:
-        room = create_room()
+        room = await create_room()
     except HTTPException as e:
         print(f"Unable to provision room: {e.detail}")
         return False
 
     # Get a token for the bot
-    token = daily_rest_helper.get_token(room.url, MAX_SESSION_TIME)
+    token = await daily_helpers["rest"].get_token(room.url, MAX_SESSION_TIME)
 
     if not room or not token:
         print(f"Failed to get token for room: {room.url}")
@@ -272,18 +284,15 @@ if __name__ == "__main__":
                         default=False, help="Reload code on change")
     parser.add_argument("--deploy-bot", action="store_true",
                         default=False, help="Immediately deploy a bot to Fly")
-
     config = parser.parse_args()
 
     if config.deploy_bot:
-        rv = deploy_bot()
+        rv = asyncio.run(deploy_bot())
         if not rv:
             sys.exit(1)
         sys.exit(0)
 
     try:
-        import uvicorn
-
         uvicorn.run(
             "bot_runner:app",
             host=config.host,
