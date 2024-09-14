@@ -10,6 +10,10 @@ const nextConfig = {
       },
     ];
   },
+
+  env: {
+    SYSTEM_PROMPT: process.env.SYSTEM_PROMPT,
+  },
 };
 
 export default nextConfig;

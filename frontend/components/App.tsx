@@ -7,7 +7,7 @@ type State = "idle" | "launching" | "room_created" | "error";
 export default function App() {
   const [state, setState] = useState<State>("idle");
   const [room, setRoom] = useState<string | null>(null);
-  const [systemPrompt, setSystemPrompt] = useState<string>("Du bist Chuck Norris");
+  const [systemPrompt, setSystemPrompt] = useState<string>(process.env.SYSTEM_PROMPT || "You are a friendly chatbot.");
 
   async function launchBot() {
     setState("launching");
