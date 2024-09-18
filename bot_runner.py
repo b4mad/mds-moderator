@@ -25,14 +25,15 @@ load_dotenv(override=True)
 
 # ------------ Configuration ------------ #
 
-MAX_SESSION_TIME = 5 * 60  # 60 minutes
+MAX_SESSION_TIME = int(os.getenv('MAX_SESSION_TIME', 5 * 60))  # Default: 5 minutes
 REQUIRED_ENV_VARS = [
     'DAILY_API_KEY',
     'OPENAI_API_KEY',
     'ELEVENLABS_API_KEY',
     'ELEVENLABS_VOICE_ID',
     'FLY_API_KEY',
-    'FLY_APP_NAME',]
+    'FLY_APP_NAME',
+    'MAX_SESSION_TIME',]
 
 FLY_API_HOST = os.getenv("FLY_API_HOST", "https://api.machines.dev/v1")
 FLY_APP_NAME = os.getenv("FLY_APP_NAME", "mds-moderator")
