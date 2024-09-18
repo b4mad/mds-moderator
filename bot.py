@@ -116,7 +116,11 @@ async def main(room_url: str, token: str):
 
         pipeline = Pipeline(pipeline_components)
 
-        task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
+        # https://github.com/pipecat-ai/pipecat/issues/456
+        #  Interruptions not working with websocket-server
+        #  maybe this fixes interruptions
+
+        task = PipelineTask(pipeline, PipelineParams(allow_interruptions=False))
         await task.queue_frame(talking_animation.quiet_frame())
 
         # @transport.event_handler("on_first_participant_joined")
