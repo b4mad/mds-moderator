@@ -156,3 +156,5 @@ runpod.toml
 .aider*
 aider_hints/
 start_bot.json
+
+.vscode/
