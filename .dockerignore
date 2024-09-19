@@ -1,5 +1,93 @@
+# Fly.io specific
 fly.toml
+
+# Version control
 .git/
+.gitignore
+
+# Python
 __pycache__/
-.envrc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Virtual environments
 .venv/
+env/
+venv/
+ENV/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Environment variables
+.env
+.envrc
+*.env.local
+
+# Frontend specific
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/build
+frontend/.vercel
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnp
+frontend/.pnp.js
+frontend/.yarn/install-state.gz
+frontend/coverage
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Misc
+*.bak
+*.tmp
+*.temp
+.aider*
+aider_hints/
+start_bot.json
+
+storytelling-chatbot/
