@@ -69,7 +69,7 @@ USER user
 
 # Copy frontend app and build
 COPY --chown=user ./frontend/ frontend/
-RUN cd frontend && npm install && npm run build
+RUN cd frontend && rm package-lock.json && npm install && npm run build
 
 # create an /app/logs directory
 
