@@ -27,7 +27,7 @@ from loguru import logger
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from prompts import LLM_BASE_PROMPT
+from prompts import get_llm_base_prompt
 from processors import ConversationProcessor, ConversationLogger, BucketLogger
 from talking_animation import TalkingAnimation
 
@@ -77,7 +77,7 @@ async def main(room_url: str, token: str):
             model="gpt-4o"
         )
 
-        messages = [LLM_BASE_PROMPT]
+        messages = [get_llm_base_prompt(BOT_NAME)]
 
         # user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()
