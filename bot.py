@@ -27,7 +27,7 @@ from loguru import logger
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from prompts import LLM_BASE_PROMPT
+from prompts import get_llm_base_prompt
 from processors import ConversationProcessor, ConversationLogger, BucketLogger
 from talking_animation import TalkingAnimation
 
@@ -39,6 +39,9 @@ logger.add(f"./logs/{current_time_str}_trace.log", level="TRACE")
 logger.add(sys.stderr, level="DEBUG")
 # logger.opt(ansi=True)
 
+# Get the bot name from environment variable, default to "Chatbot"
+BOT_NAME = os.getenv("BOT_NAME", "Chatbot")
+
 async def main(room_url: str, token: str):
     talking_animation = TalkingAnimation()
 
@@ -46,7 +49,7 @@ async def main(room_url: str, token: str):
         transport = DailyTransport(
             room_url,
             token,
-            "Chatbot",
+            BOT_NAME,
             DailyParams(
                 audio_out_enabled=True,
                 camera_out_enabled=True,
@@ -74,7 +77,7 @@ async def main(room_url: str, token: str):
             model="gpt-4o"
         )
 
-        messages = [LLM_BASE_PROMPT]
+        messages = [get_llm_base_prompt(BOT_NAME)]
 
         # user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()

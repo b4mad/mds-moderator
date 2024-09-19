@@ -132,4 +132,8 @@ class ConversationProcessor(LLMResponseAggregator):
             username = self.user_mapping.get(user_id, user_id)  # Use username if available, otherwise use user_id
             timestamp = entry['timestamp'].strftime("%H:%M:%S")
             formatted.append(f"{timestamp} | {username} | {entry['text']}")
+            # if username != "Assistant":
+            #     formatted.append(f"{timestamp} | {username} | {entry['text']}")
+            # else:
+            #     formatted.append(entry['text'])
         return "\n".join(formatted)

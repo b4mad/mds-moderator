@@ -136,6 +136,9 @@ def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = 
     if sprite_folder:
         worker_props["config"]["env"]["SPRITE_FOLDER"] = sprite_folder
 
+    bot_name = os.getenv("BOT_NAME", "Chatbot")
+    worker_props["config"]["env"]["BOT_NAME"] = bot_name
+
     # Spawn a new machine instance
     res = requests.post(
         f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines",

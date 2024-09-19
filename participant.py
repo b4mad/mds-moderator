@@ -8,6 +8,7 @@ import asyncio
 import aiohttp
 import os
 import sys
+import random
 
 from pipecat.frames.frames import EndFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
@@ -26,6 +27,12 @@ load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
+# List of German names
+german_names = [
+    "Anna", "Max", "Sophie", "Felix", "Emma", "Paul", "Lena", "Lukas",
+    "Marie", "Jonas", "Laura", "Tim", "Julia", "David", "Lisa", "Niklas"
+]
+
 
 async def main(room_url):
     async with aiohttp.ClientSession() as session:
@@ -35,7 +42,7 @@ async def main(room_url):
         transport = DailyTransport(
             room_url,
             token,
-            "Teilnehmer",
+            random.choice(german_names),
             DailyParams(
                 audio_out_enabled=True,
                 transcription_enabled=True,
