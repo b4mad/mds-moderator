@@ -27,7 +27,7 @@ docker-build-linux:
 	docker build --tag=durandom/mds-moderator --platform linux/amd64  .
 
 docker-run-bash:
-	docker run -it --rm durandom/mds-moderator bash
+	docker run -it --rm -v $(PWD):/app --platform linux/amd64 python:3.12.3-bookworm bash
 
 docker-run-bot:
 	docker run -p 7860:7860 --env-file .env durandom/mds-moderator

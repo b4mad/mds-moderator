@@ -11,6 +11,8 @@ For example:
 10:30:15 | Alice | Hello, how are you?
 10:30:45 | Bob | I'm doing great, thanks!
 10:31:00 | Alice | Glad to hear that!
+
+The assistant's responses should not follow this format. They should be standalone messages.
 """
 
     system_prompt = os.getenv("SYSTEM_PROMPT", default_content)
