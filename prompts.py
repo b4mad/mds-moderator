@@ -1,7 +1,10 @@
 import os
 
+
 def get_llm_base_prompt(bot_name: str):
-    default_content = """You are a helpful assistant. Always respond politely and concisely."""
+    default_content = (
+        """You are a helpful assistant. Always respond politely and concisely."""
+    )
     user_format = """You are participating in a conversation with multiple users.
 User input will be formatted as follows:
 
@@ -22,7 +25,4 @@ The assistant's responses should not follow this format. They should be standalo
 
 You are an AI assistant named "{bot_name}". When users address you, they will use this name."""
 
-    return {
-        "role": "system",
-        "content": system_prompt
-    }
+    return {"role": "system", "content": system_prompt}

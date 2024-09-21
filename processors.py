@@ -17,6 +17,7 @@ from pipecat.processors.frame_processor import FrameProcessor, FrameDirection
 
 from loguru import logger
 
+
 class ConversationLogger(FrameProcessor):
     def __init__(self, messages: List[dict], log_file_path: str):
         super().__init__()
@@ -25,20 +26,24 @@ class ConversationLogger(FrameProcessor):
         self.last_logged_index = -1
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
-        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(frame, UserStoppedSpeakingFrame):
+        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(
+            frame, UserStoppedSpeakingFrame
+        ):
             self.log_messages()
         await self.push_frame(frame, direction)
 
-
     def log_messages(self):
-        new_messages = self.messages[self.last_logged_index + 1:]
+        new_messages = self.messages[self.last_logged_index + 1 :]
         if new_messages:
-            with open(self.log_file_path, 'a') as log_file:
+            with open(self.log_file_path, "a") as log_file:
                 for message in new_messages:
                     json.dump(message, log_file, indent=4)
-                    log_file.write(',\n')
+                    log_file.write(",\n")
             self.last_logged_index = len(self.messages) - 1
-            logger.info(f"Logged {len(new_messages)} new messages to {self.log_file_path}")
+            logger.info(
+                f"Logged {len(new_messages)} new messages to {self.log_file_path}"
+            )
+
 
 class BucketLogger(FrameProcessor):
     def __init__(self, messages: List[dict], bucket_name: str, subpath: str):
@@ -47,15 +52,17 @@ class BucketLogger(FrameProcessor):
         self.bucket_name = bucket_name
         self.subpath = subpath
         self.last_logged_index = -1
-        self.s3_client = boto3.client('s3')
+        self.s3_client = boto3.client("s3")
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
-        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(frame, UserStoppedSpeakingFrame):
+        if isinstance(frame, LLMFullResponseEndFrame) or isinstance(
+            frame, UserStoppedSpeakingFrame
+        ):
             self.log_messages()
         await self.push_frame(frame, direction)
 
     def log_messages(self):
-        new_messages = self.messages[self.last_logged_index + 1:]
+        new_messages = self.messages[self.last_logged_index + 1 :]
         if new_messages:
             for i, message in enumerate(new_messages, start=self.last_logged_index + 1):
                 filename = f"{i:06d}.json"
@@ -64,12 +71,15 @@ class BucketLogger(FrameProcessor):
                     self.s3_client.put_object(
                         Bucket=self.bucket_name,
                         Key=key,
-                        Body=json.dumps(message, indent=4)
+                        Body=json.dumps(message, indent=4),
                     )
-                    logger.info(f"Uploaded message {i} to s3://{self.bucket_name}/{key}")
+                    logger.info(
+                        f"Uploaded message {i} to s3://{self.bucket_name}/{key}"
+                    )
                 except ClientError as e:
                     logger.error(f"Failed to upload message {i} to S3: {e}")
             self.last_logged_index = len(self.messages) - 1
+
 
 class ConversationProcessor(LLMResponseAggregator):
     """
@@ -88,7 +98,7 @@ class ConversationProcessor(LLMResponseAggregator):
             start_frame=UserStartedSpeakingFrame,
             end_frame=UserStoppedSpeakingFrame,
             accumulator_frame=TranscriptionFrame,
-            interim_accumulator_frame=InterimTranscriptionFrame
+            interim_accumulator_frame=InterimTranscriptionFrame,
         )
         self._aggregation_detailed = []
         self.user_mapping = {}
@@ -113,7 +123,7 @@ class ConversationProcessor(LLMResponseAggregator):
                 entry = {
                     "user_id": frame.user_id,
                     "text": frame.text,
-                    "timestamp": timestamp
+                    "timestamp": timestamp,
                 }
                 self._aggregation_detailed.append(entry)
 
@@ -128,9 +138,11 @@ class ConversationProcessor(LLMResponseAggregator):
         """
         formatted = []
         for entry in self._aggregation_detailed:
-            user_id = entry['user_id']
-            username = self.user_mapping.get(user_id, user_id)  # Use username if available, otherwise use user_id
-            timestamp = entry['timestamp'].strftime("%H:%M:%S")
+            user_id = entry["user_id"]
+            username = self.user_mapping.get(
+                user_id, user_id
+            )  # Use username if available, otherwise use user_id
+            timestamp = entry["timestamp"].strftime("%H:%M:%S")
             formatted.append(f"{timestamp} | {username} | {entry['text']}")
             # if username != "Assistant":
             #     formatted.append(f"{timestamp} | {username} | {entry['text']}")

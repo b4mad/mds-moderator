@@ -3,15 +3,22 @@ import os
 from dotenv import load_dotenv
 
 from pipecat.frames.frames import (
-    LLMFullResponseEndFrame, LLMFullResponseStartFrame, StopTaskFrame,
-    TextFrame, TranscriptionFrame, UserStartedSpeakingFrame,
-    UserStoppedSpeakingFrame, LLMMessagesFrame
+    LLMFullResponseEndFrame,
+    LLMFullResponseStartFrame,
+    StopTaskFrame,
+    TextFrame,
+    TranscriptionFrame,
+    UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame,
+    LLMMessagesFrame,
 )
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_response import (
-    LLMAssistantResponseAggregator, LLMUserResponseAggregator, LLMContextAggregator
+    LLMAssistantResponseAggregator,
+    LLMUserResponseAggregator,
+    LLMContextAggregator,
 )
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameProcessor
@@ -20,6 +27,7 @@ from processors import ConversationProcessor
 from pipecat.processors.logger import FrameLogger
 
 load_dotenv(override=True)
+
 
 class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
     class TokenCollector(FrameProcessor):
@@ -46,8 +54,7 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
     async def test_conversation_processor_with_llm(self):
         conversation_processor = ConversationProcessor()
         llm_service = OpenAILLMService(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            model="gpt-3.5-turbo"
+            api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo"
         )
 
         token_collector = self.TokenCollector("token_collector")
@@ -63,32 +70,43 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
         # context = OpenAILLMContext()
         # llm_context_aggregator = LLMContextAggregator(context=context)
 
-        pipeline = Pipeline([
-            # tma_in,
-            frame_logger,
-            conversation_processor,
-            frame_logger,
-            llm_service,
-            frame_logger,
-            # token_collector,
-            # llm_context_aggregator,
-            tma_out,
-            frame_logger,
-            conversation_processor,
-            frame_logger
-
-        ])
+        pipeline = Pipeline(
+            [
+                # tma_in,
+                frame_logger,
+                conversation_processor,
+                frame_logger,
+                llm_service,
+                frame_logger,
+                # token_collector,
+                # llm_context_aggregator,
+                tma_out,
+                frame_logger,
+                conversation_processor,
+                frame_logger,
+            ]
+        )
 
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=False))
-        await task.queue_frames([
-            UserStartedSpeakingFrame(),
-            TranscriptionFrame(text="Hello, how are you?", user_id="user1", timestamp="2023-07-13T10:00:00"),
-            UserStoppedSpeakingFrame(),
-            UserStartedSpeakingFrame(),
-            TranscriptionFrame(text="I'm doing well, thanks!", user_id="user2", timestamp="2023-07-13T10:00:05"),
-            UserStoppedSpeakingFrame(),
-            StopTaskFrame(),
-        ])
+        await task.queue_frames(
+            [
+                UserStartedSpeakingFrame(),
+                TranscriptionFrame(
+                    text="Hello, how are you?",
+                    user_id="user1",
+                    timestamp="2023-07-13T10:00:00",
+                ),
+                UserStoppedSpeakingFrame(),
+                UserStartedSpeakingFrame(),
+                TranscriptionFrame(
+                    text="I'm doing well, thanks!",
+                    user_id="user2",
+                    timestamp="2023-07-13T10:00:05",
+                ),
+                UserStoppedSpeakingFrame(),
+                StopTaskFrame(),
+            ]
+        )
 
         runner = PipelineRunner()
         await runner.run(task)
@@ -111,5 +129,6 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
         # self.assertEqual(llm_messages_frame.messages[1]['role'], 'assistant')
         # self.assertEqual(llm_messages_frame.messages[1]['content'], ''.join(token_collector.tokens))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

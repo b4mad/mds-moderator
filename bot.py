@@ -1,15 +1,15 @@
-import argparse
+#!/usr/bin/env python
+
 import asyncio
 import datetime
 import aiohttp
 import os
 import sys
-from typing import Optional
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
-from pipecat.processors.aggregators.llm_response import LLMAssistantResponseAggregator, LLMUserResponseAggregator
+from pipecat.processors.aggregators.llm_response import LLMAssistantResponseAggregator
 from pipecat.frames.frames import (
     TextFrame,
     EndFrame,
@@ -17,7 +17,11 @@ from pipecat.frames.frames import (
 from pipecat.processors.logger import FrameLogger
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.services.openai import OpenAILLMService
-from pipecat.transports.services.daily import DailyParams, DailyTranscriptionSettings, DailyTransport
+from pipecat.transports.services.daily import (
+    DailyParams,
+    DailyTranscriptionSettings,
+    DailyTransport,
+)
 from pipecat.vad.silero import SileroVADAnalyzer
 
 from runner import configure
@@ -25,6 +29,7 @@ from runner import configure
 from loguru import logger
 
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 from prompts import get_llm_base_prompt
@@ -41,6 +46,7 @@ logger.add(sys.stderr, level="DEBUG")
 
 # Get the bot name from environment variable, default to "Chatbot"
 BOT_NAME = os.getenv("BOT_NAME", "Chatbot")
+
 
 async def main(room_url: str, token: str):
     talking_animation = TalkingAnimation()
@@ -59,23 +65,18 @@ async def main(room_url: str, token: str):
                 vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
                 transcription_settings=DailyTranscriptionSettings(
-                    language="de",
-                    tier="nova",
-                    model="2-general"
-                )
-            )
+                    language="de", tier="nova", model="2-general"
+                ),
+            ),
         )
 
         tts = ElevenLabsTTSService(
             aiohttp_session=session,
             api_key=os.getenv("ELEVENLABS_API_KEY", ""),
             voice_id=os.getenv("ELEVENLABS_VOICE_ID", ""),
-            model="eleven_multilingual_v2"
+            model="eleven_multilingual_v2",
         )
-        llm = OpenAILLMService(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            model="gpt-4o"
-        )
+        llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
 
         messages = [get_llm_base_prompt(BOT_NAME)]
 
@@ -109,12 +110,18 @@ async def main(room_url: str, token: str):
         pipeline_components.append(assistant_response)
 
         if DEBUG:
-            conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
+            conversation_logger = ConversationLogger(
+                messages, f"./logs/conversation-{current_time_str}.log"
+            )
             frame_logger_4 = FrameLogger("FL4", "red")
             pipeline_components.append(frame_logger_4)
             pipeline_components.append(conversation_logger)
         else:
-            conversation_logger = BucketLogger(messages, os.getenv("S3_BUCKET_NAME", "mds-moderator"), f"conversation-{current_time_str}")
+            conversation_logger = BucketLogger(
+                messages,
+                os.getenv("S3_BUCKET_NAME", "mds-moderator"),
+                f"conversation-{current_time_str}",
+            )
             pipeline_components.append(conversation_logger)
 
         pipeline = Pipeline(pipeline_components)
@@ -135,13 +142,16 @@ async def main(room_url: str, token: str):
         #     # await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
 
         participant_count = 0
+
         @transport.event_handler("on_participant_joined")
         async def on_participant_joined(transport, participant):
             nonlocal participant_count
             participant_count += 1
             transport.capture_participant_transcription(participant["id"])
-            participant_name = participant["info"]["userName"] or ''
-            logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
+            participant_name = participant["info"]["userName"] or ""
+            logger.info(
+                f"Participant {participant_name} joined. Total participants: {participant_count}"
+            )
             conversation_processor.add_user_mapping(participant["id"], participant_name)
             await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
 
@@ -149,8 +159,10 @@ async def main(room_url: str, token: str):
         async def on_participant_left(transport, participant, reason):
             nonlocal participant_count
             participant_count -= 1
-            participant_name = participant["info"]["userName"] or ''
-            logger.info(f"Participant {participant_name} left. Total participants: {participant_count}")
+            participant_name = participant["info"]["userName"] or ""
+            logger.info(
+                f"Participant {participant_name} left. Total participants: {participant_count}"
+            )
             await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}!")])
             if participant_count == 0:
                 logger.info("No participants left. Ending session.")

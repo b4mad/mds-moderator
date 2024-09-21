@@ -1,13 +1,13 @@
+#!/usr/bin/env python
+#
+
 import os
 from pipecat.frames.frames import (
     AudioRawFrame,
     ImageRawFrame,
     SpriteFrame,
     Frame,
-    LLMMessagesFrame,
     TTSStoppedFrame,
-    TextFrame,
-    EndFrame,
 )
 from PIL import Image
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
@@ -25,13 +25,15 @@ sprite_dir = os.path.join(assets_dir, subfolder)
 logger.info(f"Using sprite folder: {sprite_dir}")
 
 # Get all PNG files in the subfolder
-png_files = sorted([f for f in os.listdir(sprite_dir) if f.lower().endswith('.png')])
+png_files = sorted([f for f in os.listdir(sprite_dir) if f.lower().endswith(".png")])
 
 for png_file in png_files:
     full_path = os.path.join(sprite_dir, png_file)
     logger.info(f"Loading sprite: {full_path}")
     with Image.open(full_path) as img:
-        sprites.append(ImageRawFrame(image=img.tobytes(), size=img.size, format=img.format))
+        sprites.append(
+            ImageRawFrame(image=img.tobytes(), size=img.size, format=img.format)
+        )
 
 # Add reversed sprites to create a loop
 sprites.extend(sprites[::-1])
