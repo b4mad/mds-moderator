@@ -31,7 +31,9 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
 
         # Process the frames
         for entry in conversation_data:
-            frame = TranscriptionFrame(entry["text"], entry["user_id"], entry["timestamp"])
+            frame = TranscriptionFrame(
+                entry["text"], entry["user_id"], entry["timestamp"]
+            )
             await processor.process_frame(frame, FrameDirection.DOWNSTREAM)
 
         # Check the conversation history

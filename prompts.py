@@ -2,7 +2,9 @@ import os
 
 
 def get_llm_base_prompt(bot_name: str):
-    default_content = """You are a helpful assistant. Always respond politely and concisely."""
+    default_content = (
+        """You are a helpful assistant. Always respond politely and concisely."""
+    )
     user_format = """You are participating in a conversation with multiple users.
 User input will be formatted as follows:
 

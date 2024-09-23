@@ -14,9 +14,11 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineTask
 from pipecat.services.elevenlabs import ElevenLabsTTSService
-from pipecat.transports.services.daily import (DailyParams,
-                                               DailyTranscriptionSettings,
-                                               DailyTransport)
+from pipecat.transports.services.daily import (
+    DailyParams,
+    DailyTranscriptionSettings,
+    DailyTransport,
+)
 
 from runner import configure
 
@@ -58,7 +60,9 @@ async def main(room_url):
             DailyParams(
                 audio_out_enabled=True,
                 transcription_enabled=True,
-                transcription_settings=DailyTranscriptionSettings(language="de", tier="nova", model="2-general"),
+                transcription_settings=DailyTranscriptionSettings(
+                    language="de", tier="nova", model="2-general"
+                ),
             ),
         )
 
@@ -80,7 +84,9 @@ async def main(room_url):
             participant_name = participant["info"]["userName"] or ""
             transport.capture_participant_transcription(participant["id"])
             await asyncio.sleep(2)
-            await task.queue_frames([TextFrame(f"Hallo, wie geht es {participant_name}?")])
+            await task.queue_frames(
+                [TextFrame(f"Hallo, wie geht es {participant_name}?")]
+            )
             # sleep for a bit to give the participant time to hear the audio
             # await task.queue_frames([TextFrame(f"Wer bist du?")])
             # await task.queue_frames([EndFrame()])
