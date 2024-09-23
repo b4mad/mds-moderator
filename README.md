@@ -1,10 +1,13 @@
 # AI Chatbot with Pipecat
 
-This project implements an AI chatbot using the pipecat-ai framework. The bot can join a video call, understand speech, generate responses, and communicate using text-to-speech.
+This project implements an AI chatbot using the pipecat-ai framework. The bot can join a video call, understand speech,
+generate responses, and communicate using text-to-speech.
 
 ## Overview
 
-The bot uses a pipeline architecture to process audio and video frames, transcribe speech, generate responses using a language model, and synthesize speech. It can interact with multiple participants in a video call, greeting them when they join and saying goodbye when they leave.
+The bot uses a pipeline architecture to process audio and video frames, transcribe speech, generate responses using a
+language model, and synthesize speech. It can interact with multiple participants in a video call, greeting them when
+they join and saying goodbye when they leave.
 
 ## Key Components
 
@@ -43,9 +46,9 @@ To run the bot and participate in a conversation, you can use the provided Makef
 
 1. To start the bot:
 
-   ```
-   make bot
-   ```
+```bash
+make bot
+```
 
 2. To join a participant from the command line:
 
@@ -63,11 +66,9 @@ Make sure you have set up the necessary environment variables and dependencies b
 
 ## Setup
 
-```bash
-pipenv install
-```
+### Dependencies
 
-or `poetry install && poetry shell`
+To install the dependencies, you can use `pipenv install` or `poetry install`. Do not forget to activate the virtual environment before running the bot.
 
 ## Configuration
 
@@ -79,6 +80,18 @@ Example:
 
 ```bash
 export SPRITE_FOLDER=robot
+```
+
+### Environment Variables
+
+Use the `.env` file to set the following environment variables:
+
+```bash
+DAILY_API_KEY=
+ELEVENLABS_API_KEY=
+FLY_API_KEY=
+FLY_APP_NAME=
+DEPLOYMENT_URL=
 ```
 
 ## Starting a Bot
