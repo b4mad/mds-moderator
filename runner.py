@@ -11,9 +11,7 @@ import requests
 
 def configure():
     parser = argparse.ArgumentParser(description="Daily AI SDK Bot Sample")
-    parser.add_argument(
-        "-u", "--url", type=str, required=False, help="URL of the Daily room to join"
-    )
+    parser.add_argument("-u", "--url", type=str, required=False, help="URL of the Daily room to join")
     parser.add_argument(
         "-k",
         "--apikey",
@@ -65,9 +63,7 @@ def configure():
         )
 
         if res.status_code != 200:
-            raise Exception(
-                f"Failed to create meeting token: {res.status_code} {res.text}"
-            )
+            raise Exception(f"Failed to create meeting token: {res.status_code} {res.text}")
 
         token: str = res.json()["token"]
     else:

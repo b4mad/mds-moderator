@@ -16,9 +16,7 @@ def load_images(image_files):
         filename = os.path.splitext(os.path.basename(full_path))[0]
         # Open the image and convert it to bytes
         with Image.open(full_path) as img:
-            images[filename] = ImageRawFrame(
-                image=img.tobytes(), size=img.size, format=img.format
-            )
+            images[filename] = ImageRawFrame(image=img.tobytes(), size=img.size, format=img.format)
     return images
 
 

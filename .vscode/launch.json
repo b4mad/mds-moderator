@@ -19,8 +19,7 @@
                 // "-m cryto_gpg",
             ],
             "cwd": "${workspaceRoot}",
-            "env": {
-            },
+            "env": {},
             // "envFile": "tests/.env_test",
             // "debugOptions": [
             //     "WaitOnAbnormalExit",

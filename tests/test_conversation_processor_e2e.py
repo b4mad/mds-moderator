@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from pipecat.frames.frames import (
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
-    LLMMessagesFrame,
     StopTaskFrame,
     TextFrame,
     TranscriptionFrame,
@@ -15,12 +14,7 @@ from pipecat.frames.frames import (
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
-from pipecat.processors.aggregators.llm_response import (
-    LLMAssistantResponseAggregator,
-    LLMContextAggregator,
-    LLMUserResponseAggregator,
-)
-from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
+from pipecat.processors.aggregators.llm_response import LLMAssistantResponseAggregator
 from pipecat.processors.frame_processor import FrameProcessor
 from pipecat.processors.logger import FrameLogger
 from pipecat.services.openai import OpenAILLMService
@@ -54,18 +48,18 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
 
     async def test_conversation_processor_with_llm(self):
         conversation_processor = ConversationProcessor()
-        llm_service = OpenAILLMService(
-            api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo"
-        )
+        llm_service = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo")
 
-        token_collector = self.TokenCollector("token_collector")
+        # F841 token_collector = self.TokenCollector("token_collector")
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful LLM in a WebRTC call. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way.",
+                "content": "You are a helpful LLM in a WebRTC call. Your goal is to demonstrate your capabilities in a succinct way."
+                " Your output will be converted to audio so don't include special characters in your answers. Respond to what the user"
+                " said in a creative and helpful way.",
             },
         ]
-        tma_in = LLMUserResponseAggregator(messages)
+        # F841 tma_in = LLMUserResponseAggregator(messages)
         tma_out = LLMAssistantResponseAggregator(messages)
         frame_logger = FrameLogger("FL")
         # context = OpenAILLMContext()

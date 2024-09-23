@@ -20,10 +20,34 @@ uvicorn = "^0.30.6"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
+flake8 = "^7.1.1"
+flake8-pyproject = "^1.2.3"
 pylance = "^0.18.0"
 pytest = "^8.3.3"
-flake8 = "^7.1.1"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]
+
+[tool.black]
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.github
+    | \.hg
+    | \.pytest_cache
+    | _build
+    | build
+    | dist
+  )/
+)
+'''
+include = '\.pyi?$'
+line-length = 120
+target-version = ['py312']
+
+[tool.isort]
+multi_line_output = 3
+profile = "black"

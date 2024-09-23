@@ -58,9 +58,7 @@ async def main(room_url: str, token: str):
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
-                transcription_settings=DailyTranscriptionSettings(
-                    language="de", tier="nova", model="2-general"
-                ),
+                transcription_settings=DailyTranscriptionSettings(language="de", tier="nova", model="2-general"),
             ),
         )
 
@@ -104,9 +102,7 @@ async def main(room_url: str, token: str):
         pipeline_components.append(assistant_response)
 
         if DEBUG:
-            conversation_logger = ConversationLogger(
-                messages, f"./logs/conversation-{current_time_str}.log"
-            )
+            conversation_logger = ConversationLogger(messages, f"./logs/conversation-{current_time_str}.log")
             frame_logger_4 = FrameLogger("FL4", "red")
             pipeline_components.append(frame_logger_4)
             pipeline_components.append(conversation_logger)
@@ -143,9 +139,7 @@ async def main(room_url: str, token: str):
             participant_count += 1
             transport.capture_participant_transcription(participant["id"])
             participant_name = participant["info"]["userName"] or ""
-            logger.info(
-                f"Participant {participant_name} joined. Total participants: {participant_count}"
-            )
+            logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
             await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
 
@@ -154,9 +148,7 @@ async def main(room_url: str, token: str):
             nonlocal participant_count
             participant_count -= 1
             participant_name = participant["info"]["userName"] or ""
-            logger.info(
-                f"Participant {participant_name} left. Total participants: {participant_count}"
-            )
+            logger.info(f"Participant {participant_name} left. Total participants: {participant_count}")
             await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}!")])
             if participant_count == 0:
                 logger.info("No participants left. Ending session.")
