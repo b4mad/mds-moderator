@@ -1,30 +1,25 @@
-import unittest
 import os
-from dotenv import load_dotenv
+import unittest
 
-from pipecat.frames.frames import (
-    LLMFullResponseEndFrame,
-    LLMFullResponseStartFrame,
-    StopTaskFrame,
-    TextFrame,
-    TranscriptionFrame,
-    UserStartedSpeakingFrame,
-    UserStoppedSpeakingFrame,
-    LLMMessagesFrame,
-)
+from dotenv import load_dotenv
+from pipecat.frames.frames import (LLMFullResponseEndFrame,
+                                   LLMFullResponseStartFrame, LLMMessagesFrame,
+                                   StopTaskFrame, TextFrame,
+                                   TranscriptionFrame,
+                                   UserStartedSpeakingFrame,
+                                   UserStoppedSpeakingFrame)
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_response import (
-    LLMAssistantResponseAggregator,
-    LLMUserResponseAggregator,
-    LLMContextAggregator,
-)
+    LLMAssistantResponseAggregator, LLMContextAggregator,
+    LLMUserResponseAggregator)
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameProcessor
-from pipecat.services.openai import OpenAILLMService
-from processors import ConversationProcessor
 from pipecat.processors.logger import FrameLogger
+from pipecat.services.openai import OpenAILLMService
+
+from processors import ConversationProcessor
 
 load_dotenv(override=True)
 
@@ -53,9 +48,7 @@ class TestConversationProcessorE2E(unittest.IsolatedAsyncioTestCase):
 
     async def test_conversation_processor_with_llm(self):
         conversation_processor = ConversationProcessor()
-        llm_service = OpenAILLMService(
-            api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo"
-        )
+        llm_service = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo")
 
         token_collector = self.TokenCollector("token_collector")
         messages = [

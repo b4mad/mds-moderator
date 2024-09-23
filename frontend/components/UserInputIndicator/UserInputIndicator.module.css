@@ -40,22 +40,22 @@
     position: relative;
     z-index: 20;
     opacity: 0.25;
-    transition: opacity 0.5s ease; 
+    transition: opacity 0.5s ease;
 }
 
 
 @keyframes pulse {
     0% {
         outline-width: 6px;
-        @apply  outline-teal-500/10; 
+        @apply  outline-teal-500/10;
     }
     50% {
         outline-width: 24px;
-        @apply  outline-teal-500/50; 
+        @apply  outline-teal-500/50;
     }
     100% {
         outline-width: 6px;
-        @apply  outline-teal-500/10; 
+        @apply  outline-teal-500/10;
     }
 }
 

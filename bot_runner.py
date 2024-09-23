@@ -1,32 +1,26 @@
 #!/usr/bin/env python
 
-import os
 import argparse
+import asyncio
+import os
 import subprocess
 import sys
-import requests
 import uuid
-import asyncio
-import uvicorn
-from typing import Optional
-from pathlib import Path
-import aiohttp
 from contextlib import asynccontextmanager
-from loguru import logger
+from pathlib import Path
+from typing import Optional
 
-from pipecat.transports.services.helpers.daily_rest import (
-    DailyRESTHelper,
-    DailyRoomObject,
-    DailyRoomProperties,
-    DailyRoomParams,
-)
-
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-
+import aiohttp
+import requests
+import uvicorn
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from loguru import logger
+from pipecat.transports.services.helpers.daily_rest import (
+    DailyRESTHelper, DailyRoomObject, DailyRoomParams, DailyRoomProperties)
 
 load_dotenv(override=True)
 
@@ -74,17 +68,13 @@ async def create_room() -> DailyRoomObject:
     if not room_url:
         params = DailyRoomParams(properties=DailyRoomProperties())
         try:
-            room: DailyRoomObject = await daily_helpers["rest"].create_room(
-                params=params
-            )
+            room: DailyRoomObject = await daily_helpers["rest"].create_room(params=params)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Unable to provision room {e}")
     else:
         # Check passed room URL exists, we should assume that it already has a sip set up
         try:
-            room: DailyRoomObject = await daily_helpers["rest"].get_room_from_url(
-                room_url
-            )
+            room: DailyRoomObject = await daily_helpers["rest"].get_room_from_url(room_url)
         except Exception:
             raise HTTPException(status_code=500, detail=f"Room not found: {room_url}")
     return room
@@ -116,9 +106,7 @@ def spawn_fly_machine(
     sprite_folder: Optional[str] = None,
 ):
     # Use the same image as the bot runner
-    res = requests.get(
-        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS
-    )
+    res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS)
     if res.status_code != 200:
         raise Exception(f"Unable to get machine info from Fly: {res.text}")
     image = res.json()[0]["config"]["image"]
@@ -191,7 +179,7 @@ async def start_bot(request: Request) -> JSONResponse:
             return JSONResponse({"test": True})
         system_prompt = data.get("system_prompt") or os.getenv("SYSTEM_PROMPT")
         sprite_folder = data.get("sprite_folder")
-    except Exception as e:
+    except Exception:
         system_prompt = os.getenv("SYSTEM_PROMPT")
         sprite_folder = None
 
@@ -201,16 +189,14 @@ async def start_bot(request: Request) -> JSONResponse:
     token = await daily_helpers["rest"].get_token(room.url, MAX_SESSION_TIME)
 
     if not room or not token:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get token for room: {room.url}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get token for room: {room.url}")
 
     # Launch a new fly.io machine, or run as a shell process (not recommended)
     run_as_process = os.getenv("RUN_AS_PROCESS", False)
     if run_as_process:
-        print(f"Running as process")
+        print("Running as process")
     else:
-        print(f"Running as VM")
+        print("Running as VM")
 
     if run_as_process:
         try:
@@ -230,9 +216,7 @@ async def start_bot(request: Request) -> JSONResponse:
                 env=env,
             )
         except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Failed to start subprocess: {e}"
-            )
+            raise HTTPException(status_code=500, detail=f"Failed to start subprocess: {e}")
     else:
         try:
             spawn_fly_machine(room.url, token, system_prompt, sprite_folder)
@@ -300,15 +284,9 @@ if __name__ == "__main__":
             raise Exception(f"Missing environment variable: {env_var}.")
 
     parser = argparse.ArgumentParser(description="MDS Bot Runner")
-    parser.add_argument(
-        "--host", type=str, default=os.getenv("HOST", "0.0.0.0"), help="Host address"
-    )
-    parser.add_argument(
-        "--port", type=int, default=os.getenv("PORT", 7860), help="Port number"
-    )
-    parser.add_argument(
-        "--reload", action="store_true", default=False, help="Reload code on change"
-    )
+    parser.add_argument("--host", type=str, default=os.getenv("HOST", "0.0.0.0"), help="Host address")
+    parser.add_argument("--port", type=int, default=os.getenv("PORT", 7860), help="Port number")
+    parser.add_argument("--reload", action="store_true", default=False, help="Reload code on change")
     parser.add_argument(
         "--deploy-bot",
         action="store_true",
@@ -324,9 +302,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     try:
-        uvicorn.run(
-            "bot_runner:app", host=config.host, port=config.port, reload=config.reload
-        )
+        uvicorn.run("bot_runner:app", host=config.host, port=config.port, reload=config.reload)
 
     except KeyboardInterrupt:
         print("Pipecat runner shutting down...")

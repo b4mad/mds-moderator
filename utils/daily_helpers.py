@@ -1,9 +1,9 @@
-import urllib.parse
 import os
 import time
 import urllib
-import requests
+import urllib.parse
 
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -77,13 +77,12 @@ def get_token(room_url: str) -> str:
         Exception: If there is an error creating the meeting token.
     """
     if not room_url:
-        raise Exception(
-            "No Daily room specified. You must specify a Daily room in order a token to be generated."
-        )
+        raise Exception("No Daily room specified. You must specify a Daily room in order a token to be generated.")
 
     if not daily_api_key:
         raise Exception(
-            "No Daily API key specified. set DAILY_API_KEY in your environment to specify a Daily API key, available from https://dashboard.daily.co/developers."
+            "No Daily API key specified. set DAILY_API_KEY in your environment to specify a Daily API key,"
+            " available from https://dashboard.daily.co/developers."
         )
 
     expiration: float = time.time() + 60 * 60
