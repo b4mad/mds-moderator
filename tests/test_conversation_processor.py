@@ -1,6 +1,10 @@
 import unittest
 
-from pipecat.frames.frames import TranscriptionFrame
+from pipecat.frames.frames import (
+    TranscriptionFrame,
+    UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame,
+)
 from pipecat.processors.frame_processor import FrameDirection
 
 from processors import ConversationProcessor
@@ -15,24 +19,26 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
             {
                 "user_id": "user1",
                 "text": "Hello, how are you?",
-                "timestamp": "2023-07-13T10:00:00",
+                "timestamp": "2023-07-13T10:00:00.000000Z",
             },
             {
                 "user_id": "user2",
                 "text": "I'm doing well, thanks!",
-                "timestamp": "2023-07-13T10:00:05",
+                "timestamp": "2023-07-13T10:00:05.000000Z",
             },
             {
                 "user_id": "user1",
                 "text": "That's great to hear!",
-                "timestamp": "2023-07-13T10:00:10",
+                "timestamp": "2023-07-13T10:00:10.000000Z",
             },
         ]
 
         # Process the frames
         for entry in conversation_data:
+            await processor.process_frame(UserStartedSpeakingFrame(), FrameDirection.DOWNSTREAM)
             frame = TranscriptionFrame(entry["text"], entry["user_id"], entry["timestamp"])
             await processor.process_frame(frame, FrameDirection.DOWNSTREAM)
+            await processor.process_frame(UserStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
 
         # Check the conversation history
         history = processor.get_conversation_history()

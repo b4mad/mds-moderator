@@ -106,21 +106,17 @@ class ConversationProcessor(LLMResponseAggregator):
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
-        if isinstance(frame, self._accumulator_frame):
-            if self._aggregating:
-                # timestamp has the format "2024-07-14T10:18:19.766929Z"
-                # parse it into a datetime object
-                timestamp = datetime.fromisoformat(frame.timestamp[:-1])
-                entry = {
-                    "user_id": frame.user_id,
-                    "text": frame.text,
-                    "timestamp": timestamp,
-                }
-                self._aggregation_detailed.append(entry)
+        if isinstance(frame, TranscriptionFrame):
+            timestamp = frame.timestamp  # Store the timestamp as a string to preserve full precision
+            entry = {
+                "user_id": frame.user_id,
+                "text": frame.text,
+                "timestamp": timestamp,
+            }
+            self._aggregation_detailed.append(entry)
 
     async def _push_aggregation(self):
         self._aggregation = self.format_aggregation()
-        self._aggregation_detailed = []
         await super()._push_aggregation()
 
     def format_aggregation(self):
@@ -131,10 +127,27 @@ class ConversationProcessor(LLMResponseAggregator):
         for entry in self._aggregation_detailed:
             user_id = entry["user_id"]
             username = self.user_mapping.get(user_id, user_id)  # Use username if available, otherwise use user_id
-            timestamp = entry["timestamp"].strftime("%H:%M:%S")
+            timestamp = datetime.fromisoformat(entry["timestamp"][:-1]).strftime("%H:%M:%S")
             formatted.append(f"{timestamp} | {username} | {entry['text']}")
-            # if username != "Assistant":
-            #     formatted.append(f"{timestamp} | {username} | {entry['text']}")
-            # else:
-            #     formatted.append(entry['text'])
         return "\n".join(formatted)
+
+    def get_conversation_history(self):
+        """
+        Returns the conversation history.
+
+        Returns:
+            list: A list of dictionaries containing conversation entries.
+        """
+        return self._aggregation_detailed
+
+    def get_last_n_entries(self, n: int):
+        """
+        Returns the last n entries from the conversation history.
+
+        Args:
+            n (int): The number of entries to return.
+
+        Returns:
+            list: A list of the last n conversation entries.
+        """
+        return self._aggregation_detailed[-n:]
