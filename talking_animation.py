@@ -1,18 +1,18 @@
+#!/usr/bin/env python
+#
+
 import os
+
+from loguru import logger
+from PIL import Image
 from pipecat.frames.frames import (
     AudioRawFrame,
+    Frame,
     ImageRawFrame,
     SpriteFrame,
-    Frame,
-    LLMMessagesFrame,
     TTSStoppedFrame,
-    TextFrame,
-    EndFrame,
 )
-from PIL import Image
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from loguru import logger
-
 
 sprites = []
 
@@ -25,7 +25,7 @@ sprite_dir = os.path.join(assets_dir, subfolder)
 logger.info(f"Using sprite folder: {sprite_dir}")
 
 # Get all PNG files in the subfolder
-png_files = sorted([f for f in os.listdir(sprite_dir) if f.lower().endswith('.png')])
+png_files = sorted([f for f in os.listdir(sprite_dir) if f.lower().endswith(".png")])
 
 for png_file in png_files:
     full_path = os.path.join(sprite_dir, png_file)

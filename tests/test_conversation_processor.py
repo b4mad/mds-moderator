@@ -1,7 +1,13 @@
 import unittest
+
+from pipecat.frames.frames import (
+    TranscriptionFrame,
+    UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame,
+)
 from pipecat.processors.frame_processor import FrameDirection
+
 from processors import ConversationProcessor
-from pipecat.frames.frames import TranscriptionFrame
 
 
 class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
@@ -10,15 +16,29 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
 
         # Create an array of dicts with sample conversation data
         conversation_data = [
-            {"user_id": "user1", "text": "Hello, how are you?", "timestamp": "2023-07-13T10:00:00"},
-            {"user_id": "user2", "text": "I'm doing well, thanks!", "timestamp": "2023-07-13T10:00:05"},
-            {"user_id": "user1", "text": "That's great to hear!", "timestamp": "2023-07-13T10:00:10"},
+            {
+                "user_id": "user1",
+                "text": "Hello, how are you?",
+                "timestamp": "2023-07-13T10:00:00.000000Z",
+            },
+            {
+                "user_id": "user2",
+                "text": "I'm doing well, thanks!",
+                "timestamp": "2023-07-13T10:00:05.000000Z",
+            },
+            {
+                "user_id": "user1",
+                "text": "That's great to hear!",
+                "timestamp": "2023-07-13T10:00:10.000000Z",
+            },
         ]
 
         # Process the frames
         for entry in conversation_data:
+            await processor.process_frame(UserStartedSpeakingFrame(), FrameDirection.DOWNSTREAM)
             frame = TranscriptionFrame(entry["text"], entry["user_id"], entry["timestamp"])
             await processor.process_frame(frame, FrameDirection.DOWNSTREAM)
+            await processor.process_frame(UserStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
 
         # Check the conversation history
         history = processor.get_conversation_history()
@@ -37,5 +57,5 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(last_two[1]["text"], conversation_data[-1]["text"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
