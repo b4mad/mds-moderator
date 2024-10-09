@@ -269,7 +269,10 @@ async def deploy_bot():
 
     # Deploy the bot to Fly
     try:
-        spawn_fly_machine(room.url, token)
+        bot_name = os.getenv("BOT_NAME", "Chatbot")
+        system_prompt = os.getenv("SYSTEM_PROMPT", "You're a friendly chatbot.")
+        sprite_folder = os.getenv("SPRITE_FOLDER", "robot")
+        spawn_fly_machine(room.url, token, bot_name, system_prompt, sprite_folder)
         print(f"Bot deployed successfully to room: {room.url}")
     except Exception as e:
         print(f"Failed to spawn VM: {e}")
