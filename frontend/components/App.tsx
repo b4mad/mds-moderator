@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from 'next/navigation';
 
 type State = "idle" | "launching" | "room_created" | "error";
@@ -22,6 +22,7 @@ export default function App() {
   const [systemPrompt, setSystemPrompt] = useState<string>(process.env.SYSTEM_PROMPT || "You are a friendly chatbot.");
   const [spriteFolderName, setSpriteFolderName] = useState<string>(spriteOptions[0].value);
   const [name, setName] = useState<string>(process.env.BOT_NAME || "");
+  const [currentLink, setCurrentLink] = useState<string>("");
 
   const searchParams = useSearchParams();
 
@@ -43,6 +44,30 @@ export default function App() {
       setName(decodeURIComponent(nameParam));
     }
   }, [searchParams]);
+
+  const generateLink = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const baseUrl = window.location.origin + window.location.pathname;
+      const params = new URLSearchParams();
+      if (systemPrompt) params.set('prompt', encodeURIComponent(systemPrompt));
+      if (spriteFolderName) params.set('sprite', encodeURIComponent(spriteFolderName));
+      if (name) params.set('name', encodeURIComponent(name));
+      return `${baseUrl}?${params.toString()}`;
+    }
+    return '';
+  }, [systemPrompt, spriteFolderName, name]);
+
+  useEffect(() => {
+    setCurrentLink(generateLink());
+  }, [generateLink]);
+
+  const copyLinkToClipboard = () => {
+    navigator.clipboard.writeText(currentLink).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy link: ', err);
+    });
+  };
 
   async function launchBot() {
     setState("launching");
@@ -84,6 +109,14 @@ export default function App() {
     <div className="flex flex-col items-center justify-center h-screen w-full">
       {state === "idle" && (
         <div className="w-full max-w-4xl px-4 space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={copyLinkToClipboard}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Copy Link
+            </button>
+          </div>
           <div>
             <label htmlFor="spriteSelect" className="block text-sm font-medium text-gray-900 bg-gray-100 p-1 rounded mb-1">
               Appearance
