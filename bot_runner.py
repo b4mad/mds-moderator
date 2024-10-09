@@ -7,11 +7,13 @@ import uuid
 import asyncio
 import uvicorn
 import json
+import time
 from typing import Optional
 from pathlib import Path
 import aiohttp
 from contextlib import asynccontextmanager
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from pipecat.transports.services.helpers.daily_rest import DailyRESTHelper, DailyRoomObject, DailyRoomProperties, DailyRoomParams
 
@@ -101,8 +103,23 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 # ----------------- Main ----------------- #
 
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=60))
+def check_machine_state(vm_id):
+    logger.info(f"Checking state of machine {vm_id}")
+    res = requests.get(
+        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines/{vm_id}",
+        headers=FLY_HEADERS,
+        timeout=30
+    )
+    res.raise_for_status()
+    state = res.json()['state']
+    logger.info(f"Machine {vm_id} state: {state}")
+    if state != 'started':
+        raise Exception(f"Machine not in 'started' state. Current state: {state}")
+    return state
+
 def spawn_fly_machine(room_url: str, token: str, bot_name: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None):
-    SPAWN_TIMEOUT = 120  # 2 minutes timeout
+    SPAWN_TIMEOUT = 300  # 5 minutes timeout
 
     logger.info(f"Spawning Fly machine for room: {room_url}")
     logger.info(f"Bot name: {bot_name}")
@@ -169,17 +186,19 @@ def spawn_fly_machine(room_url: str, token: str, bot_name: str, system_prompt: O
     logger.info(f"Machine spawned with ID: {vm_id}")
 
     logger.info("Waiting for machine to enter 'started' state")
-    res = requests.get(
-        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines/{vm_id}/wait?state=started",
-        headers=FLY_HEADERS,
-        timeout=SPAWN_TIMEOUT
-    )
+    start_time = time.time()
+    while time.time() - start_time < SPAWN_TIMEOUT:
+        try:
+            state = check_machine_state(vm_id)
+            if state == 'started':
+                logger.info(f"Machine successfully started and joined room: {room_url}")
+                return
+        except Exception as e:
+            logger.warning(f"Error checking machine state: {e}")
+        time.sleep(10)  # Wait 10 seconds before checking again
 
-    if res.status_code != 200:
-        logger.error(f"Bot was unable to enter started state: {res.text}")
-        raise Exception(f"Bot was unable to enter started state: {res.text}")
-
-    logger.info(f"Machine successfully started and joined room: {room_url}")
+    logger.error(f"Bot was unable to enter started state within {SPAWN_TIMEOUT} seconds")
+    raise Exception(f"Bot was unable to enter started state within {SPAWN_TIMEOUT} seconds")
 
 
 @app.post("/start_bot")

@@ -101,25 +101,34 @@ export default function App() {
       setState("room_created");
     } catch (error) {
       console.error("Error launching bot:", error);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         console.error("Request timed out");
       }
       setState("error");
+      setErrorMessage(error instanceof Error ? error.message : String(error));
     }
   }
+
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   if (state === "error") {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-red-500 font-semibold bg-white px-4 py-2 shadow-xl rounded-lg mb-4">
-          An error occurred while launching the bot. Please try again later.
-        </p>
-        <button
-          onClick={() => setState("idle")}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Back to Configuration
-        </button>
+        <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-4">
+            An error occurred while launching the bot:
+          </p>
+          <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-60 mb-4">
+            {errorMessage || "Unknown error occurred. Please try again later."}
+          </pre>
+          <button
+            onClick={() => setState("idle")}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Back to Configuration
+          </button>
+        </div>
       </div>
     );
   }

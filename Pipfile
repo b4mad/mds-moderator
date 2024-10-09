@@ -13,6 +13,7 @@ torchaudio = "==2.3.1"
 boto3 = "*"
 python-multipart = "*"
 pipecat-ai = {extras = ["silero,openai,daily,elevenlabs"], version = "*"}
+tenacity = "*"
 
 [dev-packages]
 pytest = "*"
