@@ -32,8 +32,7 @@ REQUIRED_ENV_VARS = [
     'ELEVENLABS_API_KEY',
     'ELEVENLABS_VOICE_ID',
     'FLY_API_KEY',
-    'FLY_APP_NAME',
-    'MAX_SESSION_TIME',]
+    'FLY_APP_NAME']
 
 FLY_API_HOST = os.getenv("FLY_API_HOST", "https://api.machines.dev/v1")
 FLY_APP_NAME = os.getenv("FLY_APP_NAME", "mds-moderator")

@@ -171,17 +171,37 @@ export default function App() {
       )}
       {state === "launching" && <p>Launching bot...</p>}
       {state === "room_created" && (
-        <>
+        <div className="space-y-4">
           <p>Room created successfully!</p>
-          <a
-            href={room || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-700 underline"
+          <button
+            onClick={() => window.open(room || "#", "_blank", "noopener,noreferrer")}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
-            {room}
-          </a>
-        </>
+            Open Room
+          </button>
+          <div className="space-x-4">
+            <button
+              onClick={() => {
+                if (room) {
+                  navigator.clipboard.writeText(room).then(() => {
+                    alert('Room link copied to clipboard!');
+                  }).catch(err => {
+                    console.error('Failed to copy room link: ', err);
+                  });
+                }
+              }}
+              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Copy link to room
+            </button>
+            <button
+              onClick={copyLinkToClipboard}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Copy this configuration
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
