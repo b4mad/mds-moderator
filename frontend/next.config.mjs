@@ -13,6 +13,7 @@ const nextConfig = {
 
   env: {
     SYSTEM_PROMPT: process.env.SYSTEM_PROMPT,
+    BOT_NAME: process.env.BOT_NAME,
   },
 };
 
