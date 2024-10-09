@@ -143,7 +143,7 @@ async def main(room_url: str, token: str):
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
-            await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
+            await task.queue_frames([TextFrame(f"Hallo {participant_name}! Ich bin {BOT_NAME}.")])
 
         @transport.event_handler("on_participant_left")
         async def on_participant_left(transport, participant, reason):
@@ -151,7 +151,7 @@ async def main(room_url: str, token: str):
             participant_count -= 1
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} left. Total participants: {participant_count}")
-            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}!")])
+            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}! Ich, {BOT_NAME}, wünsche dir alles Gute.")])
             if participant_count == 0:
                 logger.info("No participants left. Ending session.")
                 await task.queue_frame(EndFrame())

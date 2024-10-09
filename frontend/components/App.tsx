@@ -63,7 +63,7 @@ export default function App() {
 
   const copyLinkToClipboard = () => {
     navigator.clipboard.writeText(currentLink).then(() => {
-      alert('Link copied to clipboard!');
+      alert('Configuration copied clipboard!');
     }).catch(err => {
       console.error('Failed to copy link: ', err);
     });
@@ -114,7 +114,7 @@ export default function App() {
               onClick={copyLinkToClipboard}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             >
-              Copy Link
+              Copy this configuration
             </button>
           </div>
           <div>

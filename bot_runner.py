@@ -101,7 +101,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 # ----------------- Main ----------------- #
 
 
-def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None):
+def spawn_fly_machine(room_url: str, token: str, bot_name: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None):
     # Use the same image as the bot runner
     res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS)
     if res.status_code != 200:
@@ -136,7 +136,6 @@ def spawn_fly_machine(room_url: str, token: str, system_prompt: Optional[str] = 
     if sprite_folder:
         worker_props["config"]["env"]["SPRITE_FOLDER"] = sprite_folder
 
-    bot_name = os.getenv("BOT_NAME", "Chatbot")
     worker_props["config"]["env"]["BOT_NAME"] = bot_name
 
     # Spawn a new machine instance
@@ -180,9 +179,11 @@ async def start_bot(request: Request) -> JSONResponse:
             return JSONResponse({"test": True})
         system_prompt = data.get("system_prompt") or os.getenv("SYSTEM_PROMPT")
         sprite_folder = data.get("sprite_folder")
+        bot_name = data.get("name") or os.getenv("BOT_NAME", "Chatbot")
     except Exception as e:
         system_prompt = os.getenv("SYSTEM_PROMPT")
         sprite_folder = None
+        bot_name = os.getenv("BOT_NAME", "Chatbot")
 
     room = await create_room()
 
@@ -205,6 +206,7 @@ async def start_bot(request: Request) -> JSONResponse:
             env = os.environ.copy()
             if system_prompt:
                 env["SYSTEM_PROMPT"] = system_prompt
+            env["BOT_NAME"] = bot_name
             # check if we run inside a docker container
             if os.path.exists("/app/.venv/bin/python"):
                 cmd = f"/app/.venv/bin/python bot.py -u {room.url} -t {token}"
@@ -221,7 +223,7 @@ async def start_bot(request: Request) -> JSONResponse:
                 status_code=500, detail=f"Failed to start subprocess: {e}")
     else:
         try:
-            spawn_fly_machine(room.url, token, system_prompt, sprite_folder)
+            spawn_fly_machine(room.url, token, bot_name, system_prompt, sprite_folder)
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to spawn VM: {e}")
