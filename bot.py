@@ -5,6 +5,7 @@ import aiohttp
 import os
 import sys
 from typing import Optional
+from asyncio import Task
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -128,35 +129,46 @@ async def main(room_url: str, token: str, bot_name: str):
         task = PipelineTask(pipeline, PipelineParams(allow_interruptions=False))
         await task.queue_frame(talking_animation.quiet_frame())
 
-        # @transport.event_handler("on_first_participant_joined")
-        # async def on_first_participant_joined(transport, participant):
-        #     transport.capture_participant_transcription(participant["id"])
-        #     participant_name = participant["info"]["userName"] or ''
-        #     logger.info(f"First participant {participant_name} joined")
-        #     # await task.queue_frames([LLMMessagesFrame(messages)])
-        #     # await task.queue_frames([TextFrame(f"Hallo {participant_name}!")])
-
         participant_count = 0
+        participants_joined = False
+        end_timer: Optional[Task] = None
+
+        async def end_session_if_empty():
+            logger.info("Starting 1-minute timer.")
+            await asyncio.sleep(60)  # Wait for 2 minutes
+            if not participants_joined:
+                logger.info("No participants joined after 1 minute. Ending session.")
+                await task.queue_frame(EndFrame())
+
         @transport.event_handler("on_participant_joined")
         async def on_participant_joined(transport, participant):
-            nonlocal participant_count
+            nonlocal participant_count, participants_joined, end_timer
             participant_count += 1
+            participants_joined = True
+            if end_timer:
+                end_timer.cancel()
             transport.capture_participant_transcription(participant["id"])
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
-            await task.queue_frames([TextFrame(f"Hallo {participant_name}! Ich bin {bot_name}.")])
+            await task.queue_frames([TextFrame(f"Hallo {participant_name}! Ich bin {bot_name}. Willkommen in unserem Gespräch!")])
 
         @transport.event_handler("on_participant_left")
         async def on_participant_left(transport, participant, reason):
-            nonlocal participant_count
+            nonlocal participant_count, participants_joined, end_timer
             participant_count -= 1
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} left. Total participants: {participant_count}")
-            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}! Ich, {bot_name}, wünsche dir alles Gute.")])
+            await task.queue_frames([TextFrame(f"Auf Wiedersehen {participant_name}! Ich, {bot_name}, wünsche dir alles Gute und hoffe, wir sehen uns bald wieder.")])
             if participant_count == 0:
-                logger.info("No participants left. Ending session.")
-                await task.queue_frame(EndFrame())
+                logger.info("No participants left.")
+                participants_joined = False
+                if end_timer:
+                    end_timer.cancel()
+                end_timer = asyncio.create_task(end_session_if_empty())
+
+        # Start the end_session_if_empty timer when the bot joins the room
+        end_timer = asyncio.create_task(end_session_if_empty())
 
         runner = PipelineRunner()
 
