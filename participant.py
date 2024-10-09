@@ -86,5 +86,5 @@ async def main(room_url):
         await runner.run(task)
 
 if __name__ == "__main__":
-    (url, token) = configure()
+    (url, token, bot_name) = configure()
     asyncio.run(main(url))

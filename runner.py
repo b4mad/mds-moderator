@@ -6,7 +6,7 @@ import requests
 
 
 def configure():
-    parser = argparse.ArgumentParser(description="Daily AI SDK Bot Sample")
+    parser = argparse.ArgumentParser(description="MDS Bot")
     parser.add_argument(
         "-u",
         "--url",
@@ -27,11 +27,19 @@ def configure():
         required=False,
         help="Room token (needed to join the room as a participant)",
     )
+    parser.add_argument(
+        "-n",
+        "--name",
+        type=str,
+        required=False,
+        help="Name of the bot client",
+    )
 
     args, unknown = parser.parse_known_args()
 
     url = args.url or os.getenv("DAILY_SAMPLE_ROOM_URL")
     key = args.apikey or os.getenv("DAILY_API_KEY")
+    name = args.name or os.getenv("BOT_NAME", "Chatbot")
 
     if not url:
         raise Exception(
@@ -65,4 +73,4 @@ def configure():
     else:
         token = args.token
 
-    return (url, token)
+    return (url, token, name)

@@ -39,23 +39,19 @@ logger.add(f"./logs/{current_time_str}_trace.log", level="TRACE")
 logger.add(sys.stderr, level="DEBUG")
 # logger.opt(ansi=True)
 
-# Get the bot name from environment variable, default to "Chatbot"
-BOT_NAME = os.getenv("BOT_NAME", "Chatbot")
-
 # Get the system prompt from environment variable
 SYSTEM_PROMPT = os.getenv("SYSTEM_PROMPT", "You are a friendly chatbot.")
 
-logger.info(f"Bot Name: {BOT_NAME}")
-logger.info(f"System Prompt: {SYSTEM_PROMPT}")
-
-async def main(room_url: str, token: str):
+async def main(room_url: str, token: str, bot_name: str):
+    logger.info(f"Bot Name: {bot_name}")
+    logger.info(f"System Prompt: {SYSTEM_PROMPT}")
     talking_animation = TalkingAnimation()
 
     async with aiohttp.ClientSession() as session:
         transport = DailyTransport(
             room_url,
             token,
-            BOT_NAME,
+            bot_name,
             DailyParams(
                 audio_out_enabled=True,
                 camera_out_enabled=True,
@@ -83,7 +79,7 @@ async def main(room_url: str, token: str):
             model="gpt-4o"
         )
 
-        messages = [get_llm_base_prompt(BOT_NAME)]
+        messages = [get_llm_base_prompt(bot_name)]
 
         # user_response = LLMUserResponseAggregator(messages)
         # user_response = UserResponseAggregator()
@@ -149,7 +145,7 @@ async def main(room_url: str, token: str):
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
-            await task.queue_frames([TextFrame(f"Hallo {participant_name}! Ich bin {BOT_NAME}.")])
+            await task.queue_frames([TextFrame(f"Hallo {participant_name}! Ich bin {bot_name}.")])
 
         @transport.event_handler("on_participant_left")
         async def on_participant_left(transport, participant, reason):
@@ -157,7 +153,7 @@ async def main(room_url: str, token: str):
             participant_count -= 1
             participant_name = participant["info"]["userName"] or ''
             logger.info(f"Participant {participant_name} left. Total participants: {participant_count}")
-            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}! Ich, {BOT_NAME}, wünsche dir alles Gute.")])
+            await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}! Ich, {bot_name}, wünsche dir alles Gute.")])
             if participant_count == 0:
                 logger.info("No participants left. Ending session.")
                 await task.queue_frame(EndFrame())
@@ -172,5 +168,5 @@ async def main(room_url: str, token: str):
 
 
 if __name__ == "__main__":
-    (url, token) = configure()
-    asyncio.run(main(url, token))
+    (url, token, bot_name) = configure()
+    asyncio.run(main(url, token, bot_name))

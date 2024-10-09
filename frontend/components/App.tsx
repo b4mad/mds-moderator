@@ -21,7 +21,7 @@ export default function App() {
   const [room, setRoom] = useState<string | null>(null);
   const [systemPrompt, setSystemPrompt] = useState<string>(process.env.SYSTEM_PROMPT || "You are a friendly chatbot.");
   const [spriteFolderName, setSpriteFolderName] = useState<string>(spriteOptions[0].value);
-  const [name, setName] = useState<string>(process.env.BOT_NAME || "");
+  const [name, setName] = useState<string>(process.env.BOT_NAME || "Chatbot");
   const [currentLink, setCurrentLink] = useState<string>("");
 
   const searchParams = useSearchParams();

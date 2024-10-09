@@ -293,7 +293,7 @@ async def catch_all(path_name: Optional[str] = ""):
 
     raise HTTPException(status_code=404, detail="File not found")
 
-async def deploy_bot():
+async def deploy_bot(bot_name: str):
     # Create a new room
     try:
         room = await create_room()
@@ -310,11 +310,10 @@ async def deploy_bot():
 
     # Deploy the bot to Fly
     try:
-        bot_name = os.getenv("BOT_NAME", "Chatbot")
         system_prompt = os.getenv("SYSTEM_PROMPT", "You're a friendly chatbot.")
         sprite_folder = os.getenv("SPRITE_FOLDER", "robot")
         spawn_fly_machine(room.url, token, bot_name, system_prompt, sprite_folder)
-        print(f"Bot deployed successfully to room: {room.url}")
+        print(f"Bot '{bot_name}' deployed successfully to room: {room.url}")
     except Exception as e:
         print(f"Failed to spawn VM: {e}")
         return False
@@ -336,10 +335,13 @@ if __name__ == "__main__":
                         default=False, help="Reload code on change")
     parser.add_argument("--deploy-bot", action="store_true",
                         default=False, help="Immediately deploy a bot to Fly")
+    parser.add_argument("--bot-name", type=str,
+                        default=os.getenv("BOT_NAME", "Chatbot"), help="Name of the bot")
     config = parser.parse_args()
 
     if config.deploy_bot:
-        rv = asyncio.run(deploy_bot())
+        bot_name = config.bot_name
+        rv = asyncio.run(deploy_bot(bot_name))
         if not rv:
             sys.exit(1)
         sys.exit(0)
