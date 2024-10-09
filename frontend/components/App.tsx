@@ -85,6 +85,10 @@ export default function App() {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const { room_url } = await response.json();
 
       setRoom(room_url);
@@ -97,10 +101,16 @@ export default function App() {
 
   if (state === "error") {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500 font-semibold bg-white px-4 py-2 shadow-xl rounded-lg">
-          An error occurred. Please try again later.
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-red-500 font-semibold bg-white px-4 py-2 shadow-xl rounded-lg mb-4">
+          An error occurred while launching the bot. Please try again later.
         </p>
+        <button
+          onClick={() => setState("idle")}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Back to Configuration
+        </button>
       </div>
     );
   }

@@ -10,6 +10,7 @@ primary_region = 'ams'
 
 [env]
   FLY_APP_NAME = 'mds-moderator'
+  NODE_OPTIONS='--max-old-space-size=4096'
 
 [http_service]
   internal_port = 7860
