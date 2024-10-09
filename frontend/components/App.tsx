@@ -72,6 +72,9 @@ export default function App() {
   async function launchBot() {
     setState("launching");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
     try {
       const response = await fetch("/start_bot", {
         method: "POST",
@@ -83,7 +86,10 @@ export default function App() {
           sprite_folder: spriteFolderName || undefined,
           name: name
         }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -95,6 +101,9 @@ export default function App() {
       setState("room_created");
     } catch (error) {
       console.error("Error launching bot:", error);
+      if (error.name === 'AbortError') {
+        console.error("Request timed out");
+      }
       setState("error");
     }
   }

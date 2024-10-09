@@ -6,6 +6,7 @@ import requests
 import uuid
 import asyncio
 import uvicorn
+import json
 from typing import Optional
 from pathlib import Path
 import aiohttp
@@ -101,11 +102,21 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 
 
 def spawn_fly_machine(room_url: str, token: str, bot_name: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None):
+    SPAWN_TIMEOUT = 120  # 2 minutes timeout
+
+    logger.info(f"Spawning Fly machine for room: {room_url}")
+    logger.info(f"Bot name: {bot_name}")
+    logger.info(f"System prompt: {system_prompt}")
+    logger.info(f"Sprite folder: {sprite_folder}")
+
     # Use the same image as the bot runner
-    res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS)
+    logger.info("Fetching current machine image from Fly")
+    res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS, timeout=SPAWN_TIMEOUT)
     if res.status_code != 200:
+        logger.error(f"Unable to get machine info from Fly: {res.text}")
         raise Exception(f"Unable to get machine info from Fly: {res.text}")
     image = res.json()[0]['config']['image']
+    logger.info(f"Using image: {image}")
 
     # Machine configuration
     cmd = f"/app/.venv/bin/python3 bot.py -u {room_url} -t {token}"
@@ -137,26 +148,38 @@ def spawn_fly_machine(room_url: str, token: str, bot_name: str, system_prompt: O
 
     worker_props["config"]["env"]["BOT_NAME"] = bot_name
 
+    logger.info("Worker properties:")
+    logger.info(json.dumps(worker_props, indent=2))
+
     # Spawn a new machine instance
+    logger.info("Spawning new Fly machine")
     res = requests.post(
         f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines",
         headers=FLY_HEADERS,
-        json=worker_props)
+        json=worker_props,
+        timeout=SPAWN_TIMEOUT
+    )
 
     if res.status_code != 200:
+        logger.error(f"Problem starting a bot worker: {res.text}")
         raise Exception(f"Problem starting a bot worker: {res.text}")
 
     # Wait for the machine to enter the started state
     vm_id = res.json()['id']
+    logger.info(f"Machine spawned with ID: {vm_id}")
 
+    logger.info("Waiting for machine to enter 'started' state")
     res = requests.get(
         f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines/{vm_id}/wait?state=started",
-        headers=FLY_HEADERS)
+        headers=FLY_HEADERS,
+        timeout=SPAWN_TIMEOUT
+    )
 
     if res.status_code != 200:
+        logger.error(f"Bot was unable to enter started state: {res.text}")
         raise Exception(f"Bot was unable to enter started state: {res.text}")
 
-    print(f"Machine joined room: {room_url}")
+    logger.info(f"Machine successfully started and joined room: {room_url}")
 
 
 @app.post("/start_bot")

@@ -42,6 +42,12 @@ logger.add(sys.stderr, level="DEBUG")
 # Get the bot name from environment variable, default to "Chatbot"
 BOT_NAME = os.getenv("BOT_NAME", "Chatbot")
 
+# Get the system prompt from environment variable
+SYSTEM_PROMPT = os.getenv("SYSTEM_PROMPT", "You are a friendly chatbot.")
+
+logger.info(f"Bot Name: {BOT_NAME}")
+logger.info(f"System Prompt: {SYSTEM_PROMPT}")
+
 async def main(room_url: str, token: str):
     talking_animation = TalkingAnimation()
 
