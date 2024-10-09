@@ -21,12 +21,14 @@ export default function App() {
   const [room, setRoom] = useState<string | null>(null);
   const [systemPrompt, setSystemPrompt] = useState<string>(process.env.SYSTEM_PROMPT || "You are a friendly chatbot.");
   const [spriteFolderName, setSpriteFolderName] = useState<string>(spriteOptions[0].value);
+  const [name, setName] = useState<string>(process.env.BOT_NAME || "");
 
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const promptParam = searchParams.get('prompt');
     const spriteParam = searchParams.get('sprite');
+    const nameParam = searchParams.get('name');
 
     if (promptParam) {
       setSystemPrompt(decodeURIComponent(promptParam));
@@ -36,6 +38,9 @@ export default function App() {
       if (spriteOptions.some(option => option.value === decodedSprite)) {
         setSpriteFolderName(decodedSprite);
       }
+    }
+    if (nameParam) {
+      setName(decodeURIComponent(nameParam));
     }
   }, [searchParams]);
 
@@ -50,7 +55,8 @@ export default function App() {
         },
         body: JSON.stringify({
           system_prompt: systemPrompt,
-          sprite_folder: spriteFolderName || undefined
+          sprite_folder: spriteFolderName || undefined,
+          name: name
         }),
       });
 
@@ -94,6 +100,19 @@ export default function App() {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-900 bg-gray-100 p-1 rounded mb-1">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="Enter bot name..."
+            />
           </div>
           <div>
             <label htmlFor="systemPrompt" className="block text-sm font-medium text-gray-900 bg-gray-100 p-1 rounded mb-1">
