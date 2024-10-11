@@ -12,9 +12,21 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
 
         # Create an array of dicts with sample conversation data
         conversation_data = [
-            {"user_id": "user1", "text": "Hello, how are you?", "timestamp": "2023-07-13T10:00:00"},
-            {"user_id": "user2", "text": "I'm doing well, thanks!", "timestamp": "2023-07-13T10:00:05"},
-            {"user_id": "user1", "text": "That's great to hear!", "timestamp": "2023-07-13T10:00:10"},
+            {
+                "user_id": "user1",
+                "text": "Hello, how are you?",
+                "timestamp": "2023-07-13T10:00:00",
+            },
+            {
+                "user_id": "user2",
+                "text": "I'm doing well, thanks!",
+                "timestamp": "2023-07-13T10:00:05",
+            },
+            {
+                "user_id": "user1",
+                "text": "That's great to hear!",
+                "timestamp": "2023-07-13T10:00:10",
+            },
         ]
 
         # Process the frames

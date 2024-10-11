@@ -57,7 +57,11 @@ class BucketLogger(FrameProcessor):
                 filename = f"{i:06d}.json"
                 key = f"{self.subpath}/{filename}"
                 try:
-                    self.s3_client.put_object(Bucket=self.bucket_name, Key=key, Body=json.dumps(message, indent=4))
+                    self.s3_client.put_object(
+                        Bucket=self.bucket_name,
+                        Key=key,
+                        Body=json.dumps(message, indent=4),
+                    )
                     logger.info(f"Uploaded message {i} to s3://{self.bucket_name}/{key}")
                 except ClientError as e:
                     logger.error(f"Failed to upload message {i} to S3: {e}")
@@ -103,7 +107,11 @@ class ConversationProcessor(LLMResponseAggregator):
                 # timestamp has the format "2024-07-14T10:18:19.766929Z"
                 # parse it into a datetime object
                 timestamp = datetime.fromisoformat(frame.timestamp[:-1])
-                entry = {"user_id": frame.user_id, "text": frame.text, "timestamp": timestamp}
+                entry = {
+                    "user_id": frame.user_id,
+                    "text": frame.text,
+                    "timestamp": timestamp,
+                }
                 self._aggregation_detailed.append(entry)
 
     async def _push_aggregation(self):

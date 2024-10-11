@@ -110,7 +110,9 @@ async def main(room_url: str, token: str, bot_name: str):
             pipeline_components.append(conversation_logger)
         else:
             conversation_logger = BucketLogger(
-                messages, os.getenv("S3_BUCKET_NAME", "mds-moderator"), f"conversation-{current_time_str}"
+                messages,
+                os.getenv("S3_BUCKET_NAME", "mds-moderator"),
+                f"conversation-{current_time_str}",
             )
             pipeline_components.append(conversation_logger)
 

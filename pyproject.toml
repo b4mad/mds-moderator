@@ -9,14 +9,20 @@ version = "0.1.0"
 [tool.poetry.dependencies]
 boto3 = "^1.35.23"
 fastapi = "^0.115.0"
-pipecat-ai = {extras = ["daily", "elevenlabs", "openai", "silero"], version = "==0.0.41"}
+pipecat-ai = {extras = ["daily", "openai", "silero"], version = "==0.0.41"}
 python = "^3.12"
 python-dotenv = "^1.0.1"
 python-multipart = "^0.0.9"
 requests = "^2.32.3"
-torch = "^2.4.1"
-torchaudio = "^2.4.1"
+torch = { version = "==2.3.1", source = "pytorch" }
+torchaudio =  { version = "==2.3.1", source = "pytorch" }
 uvicorn = "^0.30.6"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
+
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"

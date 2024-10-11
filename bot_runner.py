@@ -41,7 +41,10 @@ REQUIRED_ENV_VARS = [
 FLY_API_HOST = os.getenv("FLY_API_HOST", "https://api.machines.dev/v1")
 FLY_APP_NAME = os.getenv("FLY_APP_NAME", "mds-moderator")
 FLY_API_KEY = os.getenv("FLY_API_KEY", "")
-FLY_HEADERS = {"Authorization": f"Bearer {FLY_API_KEY}", "Content-Type": "application/json"}
+FLY_HEADERS = {
+    "Authorization": f"Bearer {FLY_API_KEY}",
+    "Content-Type": "application/json",
+}
 
 daily_helpers = {}
 
@@ -82,7 +85,11 @@ async def create_room() -> DailyRoomObject:
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Mount the static directory
@@ -95,7 +102,11 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=60))
 def check_machine_state(vm_id):
     logger.info(f"Checking state of machine {vm_id}")
-    res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines/{vm_id}", headers=FLY_HEADERS, timeout=30)
+    res = requests.get(
+        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines/{vm_id}",
+        headers=FLY_HEADERS,
+        timeout=30,
+    )
     res.raise_for_status()
     state = res.json()["state"]
     logger.info(f"Machine {vm_id} state: {state}")
@@ -105,7 +116,11 @@ def check_machine_state(vm_id):
 
 
 def spawn_fly_machine(
-    room_url: str, token: str, bot_name: str, system_prompt: Optional[str] = None, sprite_folder: Optional[str] = None
+    room_url: str,
+    token: str,
+    bot_name: str,
+    system_prompt: Optional[str] = None,
+    sprite_folder: Optional[str] = None,
 ):
     spawn_timeout = 300  # 5 minutes timeout
 
@@ -116,7 +131,11 @@ def spawn_fly_machine(
 
     # Use the same image as the bot runner
     logger.info("Fetching current machine image from Fly")
-    res = requests.get(f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS, timeout=spawn_timeout)
+    res = requests.get(
+        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines",
+        headers=FLY_HEADERS,
+        timeout=spawn_timeout,
+    )
     if res.status_code != 200:
         logger.error(f"Unable to get machine info from Fly: {res.text}")
         raise Exception(f"Unable to get machine info from Fly: {res.text}")
@@ -151,7 +170,10 @@ def spawn_fly_machine(
     # Spawn a new machine instance
     logger.info("Spawning new Fly machine")
     res = requests.post(
-        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines", headers=FLY_HEADERS, json=worker_props, timeout=spawn_timeout
+        f"{FLY_API_HOST}/apps/{FLY_APP_NAME}/machines",
+        headers=FLY_HEADERS,
+        json=worker_props,
+        timeout=spawn_timeout,
     )
 
     if res.status_code != 200:
@@ -200,7 +222,7 @@ async def start_bot(request: Request) -> JSONResponse:
         system_prompt = data.get("system_prompt") or os.getenv("SYSTEM_PROMPT")
         sprite_folder = data.get("sprite_folder")
         bot_name = data.get("name") or os.getenv("BOT_NAME", "Chatbot")
-    except Exception as e:
+    except Exception:
         system_prompt = os.getenv("SYSTEM_PROMPT")
         sprite_folder = None
         bot_name = os.getenv("BOT_NAME", "Chatbot")
@@ -216,9 +238,9 @@ async def start_bot(request: Request) -> JSONResponse:
     # Launch a new fly.io machine, or run as a shell process (not recommended)
     run_as_process = os.getenv("RUN_AS_PROCESS", False)
     if run_as_process:
-        print(f"Running as process")
+        print("Running as process")
     else:
-        print(f"Running as VM")
+        print("Running as VM")
 
     if run_as_process:
         try:
@@ -231,7 +253,13 @@ async def start_bot(request: Request) -> JSONResponse:
                 cmd = f"/app/.venv/bin/python bot.py -u {room.url} -t {token}"
             else:
                 cmd = f"pipenv run python bot.py -u {room.url} -t {token}"
-            subprocess.Popen([cmd], shell=True, bufsize=1, cwd=os.path.dirname(os.path.abspath(__file__)), env=env)
+            subprocess.Popen(
+                [cmd],
+                shell=True,
+                bufsize=1,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                env=env,
+            )  # nosec B602
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to start subprocess: {e}")
     else:
@@ -306,8 +334,18 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default=os.getenv("HOST", "0.0.0.0"), help="Host address")
     parser.add_argument("--port", type=int, default=os.getenv("PORT", 7860), help="Port number")
     parser.add_argument("--reload", action="store_true", default=False, help="Reload code on change")
-    parser.add_argument("--deploy-bot", action="store_true", default=False, help="Immediately deploy a bot to Fly")
-    parser.add_argument("--bot-name", type=str, default=os.getenv("BOT_NAME", "Chatbot"), help="Name of the bot")
+    parser.add_argument(
+        "--deploy-bot",
+        action="store_true",
+        default=False,
+        help="Immediately deploy a bot to Fly",
+    )
+    parser.add_argument(
+        "--bot-name",
+        type=str,
+        default=os.getenv("BOT_NAME", "Chatbot"),
+        help="Name of the bot",
+    )
     config = parser.parse_args()
 
     if config.deploy_bot:

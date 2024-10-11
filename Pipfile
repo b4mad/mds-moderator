@@ -6,7 +6,7 @@ verify_ssl = true
 [packages]
 boto3 = "*"
 fastapi = "*"
-pipecat-ai = {extras = ["silero,openai,daily,elevenlabs"], version = "==0.0.41"}
+pipecat-ai = {extras = ["silero,openai,daily"] }
 python-dotenv = "*"
 python-multipart = "*"
 requests = "*"
@@ -15,7 +15,9 @@ torchaudio = "==2.3.1"
 uvicorn = "*"
 
 [dev-packages]
-pytest = "*"
+pytest = ">=8.3"
+black = ">=24.8"
+pylance = ">=0.18"
 
 [requires]
 python_version = "3.12"
