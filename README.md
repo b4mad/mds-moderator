@@ -1,10 +1,13 @@
 # AI Chatbot with Pipecat
 
-This project implements an AI chatbot using the pipecat-ai framework. The bot can join a video call, understand speech, generate responses, and communicate using text-to-speech.
+This project implements an AI chatbot using the pipecat-ai framework. The bot can join a video call, understand speech,
+generate responses, and communicate using text-to-speech.
 
 ## Overview
 
-The bot uses a pipeline architecture to process audio and video frames, transcribe speech, generate responses using a language model, and synthesize speech. It can interact with multiple participants in a video call, greeting them when they join and saying goodbye when they leave.
+The bot uses a pipeline architecture to process audio and video frames, transcribe speech, generate responses using a
+language model, and synthesize speech. It can interact with multiple participants in a video call, greeting them when
+they join and saying goodbye when they leave.
 
 ## Key Components
 
@@ -42,27 +45,32 @@ If the `SYSTEM_PROMPT` environment variable is not set, the bot will use the def
 To run the bot and participate in a conversation, you can use the provided Makefile:
 
 1. To start the bot:
-   ```
-   make bot
-   ```
+
+```bash
+make bot
+```
 
 2. To join a participant from the command line:
-   ```
-   make participant
-   ```
+
+```bash
+make participant
+```
 
 3. Log into daily.co and join the video call using the provided link.
-   ```
-   open $DAILY_SAMPLE_ROOM_URL
-   ```
+
+```bash
+open $DAILY_SAMPLE_ROOM_URL
+```
 
 Make sure you have set up the necessary environment variables and dependencies before running these commands.
 
 ## Setup
 
-```bash
-pipenv install
-```
+### Dependencies
+
+To install the dependencies, you can use `pipenv install` or `poetry install`. Do not forget to activate the virtual environment before running the bot.
+
+or `poetry install && poetry shell`
 
 ## Configuration
 
@@ -71,8 +79,21 @@ pipenv install
 The bot uses sprite animations for visual feedback. You can configure the sprite folder by setting the `SPRITE_FOLDER` environment variable. By default, it uses the "parkingmeter" folder. To use a different set of sprites, set the environment variable to the name of your desired folder within the `assets` directory.
 
 Example:
-```
+
+```bash
 export SPRITE_FOLDER=robot
+```
+
+### Environment Variables
+
+Use the `.env` file to set the following environment variables:
+
+```bash
+DAILY_API_KEY=
+ELEVENLABS_API_KEY=
+FLY_API_KEY=
+FLY_APP_NAME=
+DEPLOYMENT_URL=
 ```
 
 ## Starting a Bot

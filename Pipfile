@@ -1,22 +1,23 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
 
 [packages]
-requests = "*"
-python-dotenv = "*"
+boto3 = "*"
 fastapi = "*"
-uvicorn = "*"
+pipecat-ai = {extras = ["silero,openai,daily"] }
+python-dotenv = "*"
+python-multipart = "*"
+requests = "*"
 torch = "==2.3.1"
 torchaudio = "==2.3.1"
-boto3 = "*"
-python-multipart = "*"
-pipecat-ai = {extras = ["silero,openai,daily,elevenlabs"], version = "==0.0.41"}
-tenacity = "*"
+uvicorn = "*"
 
 [dev-packages]
-pytest = "*"
+pytest = ">=8.3"
+black = ">=24.8"
+pylance = ">=0.18"
 
 [requires]
 python_version = "3.12"
