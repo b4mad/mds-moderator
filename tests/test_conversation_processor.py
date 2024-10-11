@@ -1,7 +1,9 @@
 import unittest
-from pipecat.processors.frame_processor import FrameDirection
-from processors import ConversationProcessor
+
 from pipecat.frames.frames import TranscriptionFrame
+from pipecat.processors.frame_processor import FrameDirection
+
+from processors import ConversationProcessor
 
 
 class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
@@ -37,5 +39,5 @@ class TestConversationProcessor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(last_two[1]["text"], conversation_data[-1]["text"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
