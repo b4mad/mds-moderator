@@ -19,7 +19,7 @@ test:
 
 .PHONY: bot
 bot: bot.py
-	poetry run ./bot.py
+	pipenv run ./bot.py
 
 bot-runner:
 	pipenv run env RUN_AS_PROCESS=true  python ./bot_runner.py

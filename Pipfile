@@ -6,7 +6,7 @@ verify_ssl = true
 [packages]
 boto3 = "*"
 fastapi = "*"
-pipecat-ai = {extras = ["silero,openai,daily"] }
+pipecat-ai = {extras = ["silero,openai,daily,elevenlabs"], version = "==0.0.43"}
 python-dotenv = "*"
 python-multipart = "*"
 requests = "*"

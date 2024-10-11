@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import asyncio
 import datetime
 import os
@@ -8,7 +10,8 @@ from typing import Optional
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
-from pipecat.frames.frames import EndFrame, TextFrame
+
+from pipecat.frames.frames import EndFrame, LLMFullResponseEndFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -21,7 +24,6 @@ from pipecat.transports.services.daily import (DailyParams,
                                                DailyTranscriptionSettings,
                                                DailyTransport)
 from pipecat.vad.silero import SileroVADAnalyzer
-
 from processors import BucketLogger, ConversationLogger, ConversationProcessor
 from prompts import get_llm_base_prompt
 from runner import configure
@@ -148,7 +150,7 @@ async def main(room_url: str, token: str, bot_name: str):
             logger.info(f"Participant {participant_name} joined. Total participants: {participant_count}")
             conversation_processor.add_user_mapping(participant["id"], participant_name)
             await task.queue_frames(
-                [TextFrame(f"Hallo {participant_name}! Ich bin {bot_name}. Willkommen in unserem Gespräch!")]
+                [TextFrame(f"Hallo {participant_name}! Ich bin {bot_name}."), LLMFullResponseEndFrame()]
             )
 
         @transport.event_handler("on_participant_left")
@@ -161,7 +163,8 @@ async def main(room_url: str, token: str, bot_name: str):
                 [
                     TextFrame(
                         f"Auf Wiedersehen {participant_name}! Ich, {bot_name}, wünsche dir alles Gute und hoffe, wir sehen uns bald wieder."
-                    )
+                    ),
+                    LLMFullResponseEndFrame(),
                 ]
             )
             if participant_count == 0:

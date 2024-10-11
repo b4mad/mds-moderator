@@ -1,9 +1,3 @@
-#
-# Copyright (c) 2024, Daily
-#
-# SPDX-License-Identifier: BSD 2-Clause License
-#
-
 import asyncio
 import os
 import random
@@ -12,15 +6,16 @@ import sys
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
-from pipecat.frames.frames import EndFrame, TextFrame
+
+from pipecat.frames.frames import LLMFullResponseEndFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineTask
+from pipecat.processors.logger import FrameLogger
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.transports.services.daily import (DailyParams,
                                                DailyTranscriptionSettings,
                                                DailyTransport)
-
 from runner import configure
 
 load_dotenv(override=True)
@@ -74,7 +69,10 @@ async def main(room_url):
 
         runner = PipelineRunner()
 
-        task = PipelineTask(Pipeline([tts, transport.output()]))
+        frame_logger_1 = FrameLogger("FL1", "green")
+        frame_logger_2 = FrameLogger("FL2", "red")
+
+        task = PipelineTask(Pipeline([tts, frame_logger_1, transport.output(), frame_logger_2]))
 
         # Register an event handler so we can play the audio when the
         # participant joins.
@@ -84,6 +82,8 @@ async def main(room_url):
             transport.capture_participant_transcription(participant["id"])
             await asyncio.sleep(2)
             await task.queue_frames([TextFrame(f"Hallo, wie geht es {participant_name}?")])
+            await task.queue_frame(LLMFullResponseEndFrame())
+
             # sleep for a bit to give the participant time to hear the audio
             # await task.queue_frames([TextFrame(f"Wer bist du?")])
             # await task.queue_frames([EndFrame()])
@@ -92,6 +92,7 @@ async def main(room_url):
         async def on_participant_left(transport, participant, reason):
             participant_name = participant["info"]["userName"] or ""
             await task.queue_frames([TextFrame(f"Auf wiedersehen {participant_name}")])
+            await task.queue_frame(LLMFullResponseEndFrame())
             logger.info(f"Participant {participant_name} left")
 
         await runner.run(task)

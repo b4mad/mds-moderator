@@ -2,9 +2,9 @@ import os
 
 from loguru import logger
 from PIL import Image
-from pipecat.frames.frames import (AudioRawFrame, EndFrame, Frame,
-                                   ImageRawFrame, LLMMessagesFrame,
-                                   SpriteFrame, TextFrame, TTSStoppedFrame)
+
+from pipecat.frames.frames import (Frame, OutputImageRawFrame, SpriteFrame,
+                                   TTSAudioRawFrame, TTSStoppedFrame)
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 
 sprites = []
@@ -24,7 +24,7 @@ for png_file in png_files:
     full_path = os.path.join(sprite_dir, png_file)
     # logger.info(f"Loading sprite: {full_path}")
     with Image.open(full_path) as img:
-        sprites.append(ImageRawFrame(image=img.tobytes(), size=img.size, format=img.format))
+        sprites.append(OutputImageRawFrame(image=img.tobytes(), size=img.size, format=img.format))
 
 # Add reversed sprites to create a loop
 sprites.extend(sprites[::-1])
@@ -52,7 +52,7 @@ class TalkingAnimation(FrameProcessor):
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
 
-        if isinstance(frame, AudioRawFrame):
+        if isinstance(frame, TTSAudioRawFrame):
             if not self._is_talking:
                 await self.push_frame(talking_frame)
                 self._is_talking = True

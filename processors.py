@@ -5,6 +5,7 @@ from typing import List
 import boto3
 from botocore.exceptions import ClientError
 from loguru import logger
+
 from pipecat.frames.frames import (Frame, InterimTranscriptionFrame,
                                    LLMFullResponseEndFrame, TranscriptionFrame,
                                    UserStartedSpeakingFrame,
@@ -113,11 +114,13 @@ class ConversationProcessor(LLMResponseAggregator):
                     "timestamp": timestamp,
                 }
                 self._aggregation_detailed.append(entry)
+                logger.debug(f"Added conversation entry: {entry}")
 
     async def _push_aggregation(self):
         self._aggregation = self.format_aggregation()
         self._aggregation_detailed = []
         await super()._push_aggregation()
+        logger.debug("Pushed conversation aggregation")
 
     def format_aggregation(self):
         """
