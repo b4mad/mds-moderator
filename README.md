@@ -51,14 +51,16 @@ make bot
 ```
 
 2. To join a participant from the command line:
-   ```
-   make participant
-   ```
+
+```bash
+make participant
+```
 
 3. Log into daily.co and join the video call using the provided link.
-   ```
-   open $DAILY_SAMPLE_ROOM_URL
-   ```
+
+```bash
+open $DAILY_SAMPLE_ROOM_URL
+```
 
 Make sure you have set up the necessary environment variables and dependencies before running these commands.
 
@@ -68,6 +70,8 @@ Make sure you have set up the necessary environment variables and dependencies b
 
 To install the dependencies, you can use `pipenv install` or `poetry install`. Do not forget to activate the virtual environment before running the bot.
 
+or `poetry install && poetry shell`
+
 ## Configuration
 
 ### Sprite Folder
@@ -75,7 +79,8 @@ To install the dependencies, you can use `pipenv install` or `poetry install`. D
 The bot uses sprite animations for visual feedback. You can configure the sprite folder by setting the `SPRITE_FOLDER` environment variable. By default, it uses the "parkingmeter" folder. To use a different set of sprites, set the environment variable to the name of your desired folder within the `assets` directory.
 
 Example:
-```
+
+```bash
 export SPRITE_FOLDER=robot
 ```
 
