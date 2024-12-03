@@ -12,7 +12,7 @@ fastapi = "^0.115.0"
 pipecat-ai = {extras = ["daily", "openai", "silero"], version = "==0.0.41"}
 python = "^3.12"
 python-dotenv = "^1.0.1"
-python-multipart = "^0.0.9"
+python-multipart = "^0.0.18"
 requests = "^2.32.3"
 torch = { version = "==2.3.1", source = "pytorch" }
 torchaudio =  { version = "==2.3.1", source = "pytorch" }
